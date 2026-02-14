@@ -14,6 +14,12 @@
 
 ![NaSch Highway Animation](results/anim_nasch_highway.gif)
 
+### LWR: Shockwave Propagation on a Corridor
+
+Godunov scheme solving the LWR hyperbolic PDE with Greenshields fundamental diagram. An initial high-density block (jam) disperses: backward shock propagates upstream while a rarefaction fan spreads downstream. Road strip colour indicates local congestion.
+
+![LWR Shockwave Animation](results/anim_lwr_shockwave.gif)
+
 ---
 
 ## Why Aberdeen?
