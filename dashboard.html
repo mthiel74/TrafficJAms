@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrafficJAms Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+               background: #1a1a2e; color: #e0e0e0; }
+        header { background: #16213e; padding: 20px 40px; border-bottom: 2px solid #e94560; }
+        header h1 { font-size: 28px; color: #e94560; }
+        header p { color: #8888aa; margin-top: 5px; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-top: 20px; }
+        .card { background: #16213e; border-radius: 12px; padding: 20px; border: 1px solid #2a2a4a;
+                transition: transform 0.2s, box-shadow 0.2s; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(233,69,96,0.15); }
+        .card h2 { font-size: 16px; color: #e94560; margin-bottom: 8px; }
+        .card .tag { display: inline-block; background: #0f3460; color: #a0a0cc; font-size: 11px;
+                     padding: 2px 8px; border-radius: 10px; margin-right: 5px; margin-bottom: 8px; }
+        .card img { width: 100%; border-radius: 8px; margin-top: 10px; cursor: pointer;
+                    transition: transform 0.2s; }
+        .card img:hover { transform: scale(1.02); }
+        .card p { font-size: 13px; line-height: 1.5; color: #9999bb; margin-top: 8px; }
+        .tabs { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .tab { padding: 8px 20px; background: #16213e; border: 1px solid #2a2a4a; border-radius: 8px;
+               cursor: pointer; font-size: 13px; color: #8888aa; transition: all 0.2s; }
+        .tab:hover, .tab.active { background: #e94560; color: white; border-color: #e94560; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .stats { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+        .stat { background: #16213e; padding: 15px 25px; border-radius: 10px; border: 1px solid #2a2a4a;
+                text-align: center; min-width: 120px; }
+        .stat .value { font-size: 24px; font-weight: bold; color: #e94560; }
+        .stat .label { font-size: 11px; color: #8888aa; margin-top: 4px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                 background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.show { display: flex; }
+        .modal img { max-width: 90%; max-height: 90%; border-radius: 8px; }
+        .modal .close { position: absolute; top: 20px; right: 30px; font-size: 30px; color: white;
+                        cursor: pointer; }
+        footer { text-align: center; padding: 30px; color: #555; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>TrafficJAms Dashboard</h1>
+        <p>Mathematical models for Aberdeen traffic simulation</p>
+    </header>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat"><div class="value">7</div><div class="label">Core Models</div></div>
+            <div class="stat"><div class="value">24</div><div class="label">Tests Passing</div></div>
+            <div class="stat"><div class="value">15</div><div class="label">Network Nodes</div></div>
+            <div class="stat"><div class="value">8.4%</div><div class="label">Signal Optimisation</div></div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" data-section="models">Core Models</div>
+            <div class="tab" data-section="analysis">Analysis</div>
+            <div class="tab" data-section="extensions">Extensions</div>
+        </div>
+
+        <div id="models" class="section active">
+            <div class="grid">
+                <div class="card">
+                    <h2>LWR Model</h2>
+                    <span class="tag">macroscopic</span><span class="tag">PDE</span><span class="tag">Godunov</span>
+                    <img src="results/lwr.png" alt="LWR results" onclick="showModal(this)">
+                    <p>Lighthill-Whitham-Richards model with Godunov scheme. Simulates shockwave propagation on an A90-like corridor using the Greenshields fundamental diagram.</p>
+                </div>
+                <div class="card">
+                    <h2>Payne-Whitham Model</h2>
+                    <span class="tag">macroscopic</span><span class="tag">2nd order</span><span class="tag">momentum</span>
+                    <img src="results/payne_whitham.png" alt="Payne-Whitham results" onclick="showModal(this)">
+                    <p>Second-order model with anticipation term. Captures stop-and-go oscillations at merge zones that the first-order LWR model cannot represent.</p>
+                </div>
+                <div class="card">
+                    <h2>Intelligent Driver Model</h2>
+                    <span class="tag">microscopic</span><span class="tag">car-following</span><span class="tag">IDM</span>
+                    <img src="results/idm.png" alt="IDM results" onclick="showModal(this)">
+                    <p>50 vehicles on a circular road demonstrating spontaneous phantom jam formation from a single small perturbation propagating through the platoon.</p>
+                </div>
+                <div class="card">
+                    <h2>Bando Optimal Velocity</h2>
+                    <span class="tag">microscopic</span><span class="tag">OVM</span><span class="tag">bifurcation</span>
+                    <img src="results/bando.png" alt="Bando results" onclick="showModal(this)">
+                    <p>Demonstrates Hopf bifurcation behaviour — uniform flow becomes unstable when sensitivity parameter lies in a critical range, producing phantom jams.</p>
+                </div>
+                <div class="card">
+                    <h2>Nagel-Schreckenberg CA</h2>
+                    <span class="tag">cellular automaton</span><span class="tag">stochastic</span>
+                    <img src="results/nagel_schreckenberg.png" alt="NaSch results" onclick="showModal(this)">
+                    <p>Stochastic cellular automaton on a 500-cell lattice. Backward-propagating jam waves emerge spontaneously from the random braking rule.</p>
+                </div>
+                <div class="card">
+                    <h2>Network Assignment</h2>
+                    <span class="tag">graph</span><span class="tag">Wardrop</span><span class="tag">BPR</span>
+                    <img src="results/network_assignment.png" alt="Network results" onclick="showModal(this)">
+                    <p>Beckmann formulation on an 8-node Aberdeen network. Wardrop equilibrium distributes flow so used paths have approximately equal costs.</p>
+                </div>
+                <div class="card">
+                    <h2>M/D/1 Queueing</h2>
+                    <span class="tag">queueing theory</span><span class="tag">intersections</span>
+                    <img src="results/queueing.png" alt="Queueing results" onclick="showModal(this)">
+                    <p>Queue length and delay grow nonlinearly with utilisation. A 4-intersection corridor models how delays compound through multiple signals.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="analysis" class="section">
+            <div class="grid">
+                <div class="card">
+                    <h2>Fundamental Diagrams</h2>
+                    <span class="tag">flow-density</span><span class="tag">all models</span>
+                    <img src="results/fundamental_diagrams.png" alt="Fundamental diagrams" onclick="showModal(this)">
+                    <p>Flow-density relationships extracted from simulation sweeps across LWR, IDM, Bando, and NaSch models.</p>
+                </div>
+                <div class="card">
+                    <h2>Parameter Sensitivity</h2>
+                    <span class="tag">sensitivity</span><span class="tag">parameter sweep</span>
+                    <img src="results/sensitivity.png" alt="Sensitivity analysis" onclick="showModal(this)">
+                    <p>How key parameters (headway, slowdown probability, sensitivity, service rate) affect jam severity, flow, and delays.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="extensions" class="section">
+            <div class="grid">
+                <div class="card">
+                    <h2>2-Lane Nagel-Schreckenberg</h2>
+                    <span class="tag">multi-lane</span><span class="tag">lane changing</span>
+                    <img src="results/nasch_2lane.png" alt="2-lane NaSch" onclick="showModal(this)">
+                    <p>Extended CA with symmetric lane-changing rules based on incentive and safety criteria.</p>
+                </div>
+                <div class="card">
+                    <h2>Aberdeen Realistic Network</h2>
+                    <span class="tag">15 nodes</span><span class="tag">real roads</span>
+                    <img src="results/aberdeen_network.png" alt="Aberdeen network" onclick="showModal(this)">
+                    <p>15-junction network with real Aberdeen road names and multi-OD traffic assignment. Shows saturation levels matching known congestion patterns.</p>
+                </div>
+                <div class="card">
+                    <h2>Dynamic Traffic Assignment</h2>
+                    <span class="tag">time-varying</span><span class="tag">rush hour</span>
+                    <img src="results/dynamic_assignment.png" alt="Dynamic assignment" onclick="showModal(this)">
+                    <p>Morning rush hour demand profile with carry-over congestion across 12 time periods.</p>
+                </div>
+                <div class="card">
+                    <h2>Signal Optimisation</h2>
+                    <span class="tag">optimisation</span><span class="tag">green splits</span>
+                    <img src="results/signal_optimisation.png" alt="Signal optimisation" onclick="showModal(this)">
+                    <p>Optimised green phase allocation across 5 intersections with shared budget constraint. 8.4% delay reduction.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="imageModal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img id="modalImg" src="" alt="">
+    </div>
+
+    <footer>
+        TrafficJAms &mdash; Mathematical Modelling of Aberdeen Traffic
+    </footer>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.section).classList.add('active');
+            });
+        });
+
+        // Modal
+        function showModal(img) {
+            document.getElementById('modalImg').src = img.src;
+            document.getElementById('imageModal').classList.add('show');
+        }
+        function closeModal() {
+            document.getElementById('imageModal').classList.remove('show');
+        }
+        document.getElementById('imageModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeModal();
+        });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+    </script>
+</body>
+</html>
