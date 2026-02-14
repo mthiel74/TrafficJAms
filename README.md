@@ -26,6 +26,27 @@ Godunov scheme solving the LWR hyperbolic PDE with Greenshields fundamental diag
 
 ![Bando Phantom Jam Animation](results/anim_bando_phantom.gif)
 
+### Aberdeen City Centre: Multi-Agent Simulation
+
+200 vehicles navigating Aberdeen's real street network (fetched via OSMnx, 800m radius around Marischal College). Each vehicle follows IDM car-following on actual road segments, re-routing on arrival. Colour indicates speed: green = free flow, red = congested.
+
+![Aberdeen Multi-Agent Animation](results/anim_aberdeen_agents.gif)
+
+### More Animations
+
+| Animation | Description |
+|-----------|-------------|
+| ![IDM Lights](results/anim_idm_lights.gif) | **Headlights & Taillights** — braking cars glow red, accelerating cars show white headlights |
+| ![IDM Sparkline](results/anim_idm_sparkline.gif) | **Speed Sparkline** — rolling mean speed overlay inside the ring road |
+| ![IDM Collisions](results/anim_idm_collisions.gif) | **Near-Miss Detection** — red triangles flash when gap < 3m |
+| ![Comparison](results/anim_comparison.gif) | **IDM vs Bando** — side-by-side comparison of jam dynamics |
+| ![NaSch Grid](results/anim_nasch_grid.gif) | **NaSch Parameter Sweep** — 4 randomisation values in a grid |
+| ![NaSch 3D](results/anim_nasch_3d.gif) | **3D Highway View** — rotating 3D perspective of NaSch |
+| ![Network Flow](results/anim_network_flow.gif) | **Dynamic Assignment** — flow pulses through Aberdeen network |
+| ![Waveform](results/anim_idm_waveform.gif) | **Waveform Strip** — audio-visualiser style speed range display |
+| ![VHL](results/anim_idm_vhl.gif) | **Vehicle-Hours Lost** — cumulative delay counter |
+| ![Phase Portrait](results/anim_phase_portrait.gif) | **Phase Portrait** — gap vs speed limit cycle in phase space |
+
 ---
 
 ## Why Aberdeen?
