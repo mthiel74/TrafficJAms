@@ -8,6 +8,12 @@
 
 ![IDM Circular Road Animation](results/anim_idm_circular.gif)
 
+### Nagel-Schreckenberg: Cars on a Highway
+
+30 vehicles on a 120-cell periodic highway governed by the stochastic cellular automaton rules (accelerate, brake, random slowdown, move). Top panel shows real-time car positions with speed colouring; bottom panel builds up the space-time diagram revealing backward-propagating jam waves.
+
+![NaSch Highway Animation](results/anim_nasch_highway.gif)
+
 ---
 
 ## Why Aberdeen?

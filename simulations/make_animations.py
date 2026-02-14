@@ -221,9 +221,9 @@ def animate_nasch_highway(save_path=None, n_frames=250):
     # Car patches for road view
     car_patches_road = []
     for i in range(n_veh):
-        car = FancyBboxPatch((0, -0.3), 0.8, 0.6,
-                              boxstyle="round,pad=0.05",
-                              facecolor=GREEN, edgecolor="none", zorder=5, visible=False)
+        car = plt.Rectangle((0, -0.3), 0.8, 0.6,
+                              facecolor=GREEN, edgecolor="none", zorder=5, visible=False,
+                              joinstyle="round")
         ax_road.add_patch(car)
         car_patches_road.append(car)
 
