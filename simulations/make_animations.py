@@ -410,10 +410,10 @@ def animate_bando_phantom(save_path=None, n_frames=300):
 
     print("  Simulating Bando OVM...")
     n_veh = 25
-    road_length = 600.0
-    T = 120.0
+    road_length = 1200.0
+    T = 150.0
     results = bando.simulate(n_vehicles=n_veh, road_length=road_length, T=T, dt=0.05,
-                              kappa=0.9, v_max=15.0, s_c=25.0)
+                              kappa=0.85, v_max=15.0, s_c=15.0)
 
     positions = results["positions"]
     velocities = results["velocities"]

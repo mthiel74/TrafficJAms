@@ -20,6 +20,12 @@ Godunov scheme solving the LWR hyperbolic PDE with Greenshields fundamental diag
 
 ![LWR Shockwave Animation](results/anim_lwr_shockwave.gif)
 
+### Bando OVM: Phantom Jam Emergence
+
+25 vehicles on a circular road following the Optimal Velocity Model. Initially in near-uniform free flow, a small position perturbation triggers a Hopf bifurcation — the speed bar chart on the right shows the instability growing into a full stop-and-go wave rotating around the ring.
+
+![Bando Phantom Jam Animation](results/anim_bando_phantom.gif)
+
 ---
 
 ## Why Aberdeen?
