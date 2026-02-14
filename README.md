@@ -157,6 +157,59 @@ Useful for modelling route-choice equilibria with many interacting agents.
 
 ---
 
+## Simulation Results
+
+All models are implemented in the `trafficjams/` package. Run with:
+
+```bash
+pip install -r requirements.txt
+python -m simulations.run_all
+```
+
+### LWR Model — Jam Propagation on A90-like Corridor
+
+![LWR Density Evolution](results/lwr.png)
+
+The Godunov scheme resolves shockwave propagation from an initial high-density block. The upstream shock travels backward (visible as the leftward-moving density front) while a rarefaction wave fans out downstream — classic LWR behaviour matching the Greenshields fundamental diagram.
+
+### Payne-Whitham — Stop-and-Go Waves at Merge Zone
+
+![Payne-Whitham](results/payne_whitham.png)
+
+The second-order model with anticipation term captures stop-and-go oscillations near the merge zone. Unlike the first-order LWR, the momentum equation allows velocity to deviate from equilibrium, producing richer wave structures.
+
+### Intelligent Driver Model — Spontaneous Jam on Circular Road
+
+![IDM Trajectories](results/idm.png)
+
+50 vehicles on a 1km circular road. A small initial speed perturbation on one vehicle amplifies through the platoon, producing a persistent traffic jam that propagates backward — the classic "phantom jam" phenomenon. Speed profiles show oscillatory convergence.
+
+### Bando OVM — Phantom Jams via Hopf Bifurcation
+
+![Bando OVM](results/bando.png)
+
+The Optimal Velocity Model demonstrates how uniform flow becomes unstable when the sensitivity parameter κ lies in a critical range. The mean speed drops and speed variance increases as the system evolves into stop-and-go waves.
+
+### Nagel-Schreckenberg — Cellular Automaton Space-Time Diagram
+
+![NaSch Space-Time](results/nagel_schreckenberg.png)
+
+The stochastic CA model produces realistic jam patterns on a 500-cell lattice with 100 vehicles. Backward-propagating jam waves (dark diagonal bands) emerge spontaneously from the random braking rule — a hallmark of the NaSch model.
+
+### Network Assignment — Wardrop Equilibrium on Aberdeen Network
+
+![Network Assignment](results/network_assignment.png)
+
+Beckmann formulation solved with BPR cost functions on an 8-node Aberdeen-inspired network. At equilibrium, used paths have approximately equal costs (Wardrop's first principle). Path 2 (Anderson Drive) carries the most flow due to higher capacity.
+
+### M/D/1 Queueing — Signalised Corridor Delays
+
+![Queueing Model](results/queueing.png)
+
+Queue length and delay grow nonlinearly with utilisation, approaching infinity as ρ → 1. A 4-intersection corridor (modelling Union Street or King Street) shows how delays compound through multiple signals. The ρ = 0.85 threshold marks typical onset of severe congestion.
+
+---
+
 ## References
 
 - Lighthill, M.J. & Whitham, G.B. (1955). *On kinematic waves II: A theory of traffic flow on long crowded roads.* Proc. Royal Society A, 229(1178).
