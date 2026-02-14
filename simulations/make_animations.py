@@ -57,27 +57,62 @@ def speed_to_color_array(v, v_max):
 
 # ── 1. IDM Circular Road ──────────────────────────────────────────────────────
 
-def animate_idm_circular(save_path=None, n_frames=300):
+def _run_idm_jam(n_veh, road_length, T, dt, v0, s0, T_hw, a, b, delta,
+                  n_frames):
+    """Run IDM simulation with a hard-brake perturbation, returning one
+    snapshot per animation frame so every frame shows dynamics."""
+    veh_len = 5.0
+    steps_per_frame = max(1, int(T / dt / n_frames))
+    spacing = road_length / n_veh
+    positions = np.array([i * spacing for i in range(n_veh)], dtype=float)
+    velocities = np.ones(n_veh) * v0 * 0.95  # start near free-flow
+
+    # Hard brake: vehicle 0 stops, vehicle 1 slows sharply
+    velocities[0] = 0.0
+    velocities[1] = v0 * 0.3
+
+    pos_hist = [positions.copy()]
+    vel_hist = [velocities.copy()]
+    t_hist = [0.0]
+
+    t = 0.0
+    frame = 0
+    while frame < n_frames - 1:
+        for _ in range(steps_per_frame):
+            gaps = np.empty(n_veh)
+            dv = np.empty(n_veh)
+            for i in range(n_veh):
+                leader = (i + 1) % n_veh
+                gaps[i] = (positions[leader] - positions[i]) % road_length - veh_len
+                dv[i] = velocities[i] - velocities[leader]
+            gaps = np.maximum(gaps, 0.1)
+            s_star = s0 + velocities * T_hw + velocities * dv / (2 * np.sqrt(a * b))
+            s_star = np.maximum(s_star, s0)
+            accel = a * (1 - (velocities / v0) ** delta - (s_star / gaps) ** 2)
+            velocities = np.maximum(velocities + accel * dt, 0.0)
+            positions = (positions + velocities * dt) % road_length
+            t += dt
+        frame += 1
+        pos_hist.append(positions.copy())
+        vel_hist.append(velocities.copy())
+        t_hist.append(t)
+
+    return np.array(pos_hist), np.array(vel_hist), np.array(t_hist)
+
+
+def animate_idm_circular(save_path=None, n_frames=250):
     """Cars driving on a circular road with IDM dynamics.
 
     Shows phantom jam forming and propagating backward.
     """
-    from trafficjams import idm
-
     print("  Simulating IDM (circular road)...")
-    n_veh = 35
-    road_length = 800.0
-    T = 90.0
-    results = idm.simulate(n_vehicles=n_veh, road_length=road_length, T=T, dt=0.05,
-                           v0=15.0, s0=2.0, T_headway=1.6, a=1.0, b=1.5)
-
-    positions = results["positions"]
-    velocities = results["velocities"]
-    v_max = 15.0
-
-    # Downsample to n_frames
-    total = len(results["times"])
-    frame_idx = np.linspace(0, total - 1, n_frames, dtype=int)
+    n_veh = 25
+    road_length = 250.0
+    v_max = 12.0
+    positions, velocities, times = _run_idm_jam(
+        n_veh=n_veh, road_length=road_length, T=80.0, dt=0.02,
+        v0=v_max, s0=2.0, T_hw=1.0, a=1.0, b=1.5, delta=4,
+        n_frames=n_frames)
 
     # Road geometry
     R_outer = 1.0
@@ -142,10 +177,9 @@ def animate_idm_circular(save_path=None, n_frames=300):
     ax.text(0.75, bar_y, f"{v_max:.0f} m/s", ha="left", va="center", fontsize=8, color="#565a7a")
 
     def update(frame):
-        fi = frame_idx[frame]
-        pos = positions[fi]
-        vel = velocities[fi]
-        t = results["times"][fi]
+        pos = positions[frame]
+        vel = velocities[frame]
+        t = times[frame]
 
         for i in range(n_veh):
             angle = 2 * np.pi * pos[i] / road_length
@@ -171,7 +205,7 @@ def animate_idm_circular(save_path=None, n_frames=300):
 
     save_path = save_path or os.path.join(RESULTS_DIR, "anim_idm_circular.gif")
     print(f"  Saving {save_path}  ({n_frames} frames)...")
-    anim.save(save_path, writer="pillow", fps=30, dpi=120,
+    anim.save(save_path, writer="pillow", fps=25, dpi=100,
               savefig_kwargs={"facecolor": DARK_BG})
     plt.close()
     print(f"  Done  -> {os.path.getsize(save_path) / 1e6:.1f} MB")
@@ -404,23 +438,66 @@ def animate_lwr_shockwave(save_path=None, n_frames=200):
 
 # ── 4. Bando Phantom Jam ─────────────────────────────────────────────────────
 
-def animate_bando_phantom(save_path=None, n_frames=300):
+def _run_bando_jam(n_veh, road_length, T, dt, kappa, v_max, s_c, n_frames):
+    """Run Bando OVM with parameters tuned for Hopf bifurcation.
+
+    Place equilibrium headway at the inflection point of V_opt (= 2*s_c)
+    and choose kappa below the critical stability threshold.
+    """
+    from trafficjams.bando import optimal_velocity
+
+    steps_per_frame = max(1, int(T / dt / n_frames))
+    spacing = road_length / n_veh
+    positions = np.array([i * spacing for i in range(n_veh)], dtype=float)
+    v_eq = optimal_velocity(spacing, v_max, s_c)
+    velocities = np.ones(n_veh) * v_eq
+
+    # Perturbation: displace one vehicle backward (creates a larger gap behind,
+    # smaller gap ahead → braking → cascading instability)
+    positions[0] = (positions[0] - spacing * 0.4) % road_length
+
+    pos_hist = [positions.copy()]
+    vel_hist = [velocities.copy()]
+    t_hist = [0.0]
+
+    t = 0.0
+    for frame in range(n_frames - 1):
+        for _ in range(steps_per_frame):
+            gaps = np.empty(n_veh)
+            for i in range(n_veh):
+                leader = (i + 1) % n_veh
+                gaps[i] = (positions[leader] - positions[i]) % road_length
+            v_opt = optimal_velocity(gaps, v_max, s_c)
+            accel = kappa * (v_opt - velocities)
+            velocities = np.maximum(velocities + accel * dt, 0.0)
+            positions = (positions + velocities * dt) % road_length
+            t += dt
+        pos_hist.append(positions.copy())
+        vel_hist.append(velocities.copy())
+        t_hist.append(t)
+
+    return np.array(pos_hist), np.array(vel_hist), np.array(t_hist)
+
+
+def animate_bando_phantom(save_path=None, n_frames=150):
     """Bando OVM on circular road showing phantom jam emergence."""
-    from trafficjams import bando
 
     print("  Simulating Bando OVM...")
-    n_veh = 25
-    road_length = 1200.0
-    T = 150.0
-    results = bando.simulate(n_vehicles=n_veh, road_length=road_length, T=T, dt=0.05,
-                              kappa=0.85, v_max=15.0, s_c=15.0)
+    # Place equilibrium at inflection: spacing = 2 * s_c
+    # V'_opt at inflection = v_max / (s_c * (1 + tanh(2)))
+    # Critical kappa = V'_opt / 2
+    # s_c=12 => inflection at 24m, n_veh=22, L=528 => spacing=24
+    # V'_opt = 14 / (12 * 1.964) = 0.594, critical = 0.297
+    # Use kappa = 0.22 (well below critical => unstable)
+    n_veh = 22
+    road_length = 528.0
+    v_max = 14.0
+    s_c = 12.0
+    kappa = 0.22
 
-    positions = results["positions"]
-    velocities = results["velocities"]
-    v_max = 15.0
-
-    total = len(results["times"])
-    frame_idx = np.linspace(0, total - 1, n_frames, dtype=int)
+    positions, velocities, times = _run_bando_jam(
+        n_veh=n_veh, road_length=road_length, T=120.0, dt=0.02,
+        kappa=kappa, v_max=v_max, s_c=s_c, n_frames=n_frames)
 
     fig, (ax_ring, ax_speed) = plt.subplots(1, 2, figsize=(12, 5.5),
                                              gridspec_kw={"width_ratios": [1, 1.3]},
@@ -451,7 +528,7 @@ def animate_bando_phantom(save_path=None, n_frames=300):
         th = np.linspace(a1, a2, 10)
         ax_ring.plot(np.cos(th) * R_mid, np.sin(th) * R_mid, color="#4a4d60", linewidth=0.8, zorder=2)
 
-    ax_ring.text(0, 1.25, "Bando OVM: Phantom Jam", ha="center",
+    ax_ring.text(0, 1.25, f"Bando OVM: Phantom Jam (\u03ba={kappa})", ha="center",
                   fontsize=13, fontweight="bold", color=TEXT_COLOR)
 
     car_bodies = []
@@ -479,10 +556,9 @@ def animate_bando_phantom(save_path=None, n_frames=300):
                          edgecolor="none", width=0.8, zorder=3)
 
     def update(frame):
-        fi = frame_idx[frame]
-        pos = positions[fi]
-        vel = velocities[fi]
-        t = results["times"][fi]
+        pos = positions[frame]
+        vel = velocities[frame]
+        t = times[frame]
 
         import matplotlib.transforms as mtransforms
         for i in range(n_veh):
@@ -513,7 +589,7 @@ def animate_bando_phantom(save_path=None, n_frames=300):
 
     save_path = save_path or os.path.join(RESULTS_DIR, "anim_bando_phantom.gif")
     print(f"  Saving {save_path}  ({n_frames} frames)...")
-    anim.save(save_path, writer="pillow", fps=30, dpi=120,
+    anim.save(save_path, writer="pillow", fps=20, dpi=90,
               savefig_kwargs={"facecolor": DARK_BG})
     plt.close()
     print(f"  Done  -> {os.path.getsize(save_path) / 1e6:.1f} MB")
