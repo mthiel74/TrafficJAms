@@ -1,5 +1,15 @@
 # TrafficJAms: Modelling Traffic Jams in Aberdeen
 
+## Animations
+
+### IDM: Phantom Jam on a Circular Road
+
+35 vehicles following the Intelligent Driver Model on a ring road. A single braking perturbation amplifies through the platoon, creating a backward-propagating phantom traffic jam. Cars coloured green (free flow) through red (stopped).
+
+![IDM Circular Road Animation](results/anim_idm_circular.gif)
+
+---
+
 ## Why Aberdeen?
 
 Aberdeen presents distinctive traffic modelling challenges:
