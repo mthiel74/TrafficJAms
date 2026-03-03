@@ -74,6 +74,10 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
 
     rng = np.random.default_rng(123)
 
+    # Weight OD node selection by degree (major intersections attract more trips)
+    node_degrees = np.array([G.degree(n) for n in nodes], dtype=float)
+    node_weights = node_degrees / node_degrees.sum()
+
     # ------------------------------------------------------------------
     # Vehicle class
     # ------------------------------------------------------------------
@@ -107,7 +111,8 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
     for _ in range(n_vehicles):
         veh = Vehicle()
         for _attempt in range(30):
-            o, d = rng.choice(nodes, size=2, replace=False)
+            idx = rng.choice(len(nodes), size=2, replace=False, p=node_weights)
+            o, d = nodes[idx[0]], nodes[idx[1]]
             try:
                 path = _noisy_route(G, o, d, rng)
                 if len(path) >= 3:
