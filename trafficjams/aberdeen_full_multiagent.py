@@ -8,6 +8,7 @@ drivable network for the whole city.
 import numpy as np
 import osmnx as ox
 import networkx as nx
+from shapely.geometry import LineString
 
 
 def fetch_network():
@@ -50,6 +51,7 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
 
     nodes = list(G.nodes())
     edges_data = {}
+    edge_geoms = {}  # (u, v, k) -> Shapely LineString for interpolation
     for u, v, k, d in G.edges(data=True, keys=True):
         length = d.get("length", 50.0)
         maxspeed = d.get("maxspeed", "30")
@@ -61,6 +63,9 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
             speed_limit = 13.4  # 30 mph default
         speed_limit = min(speed_limit, 20.0)
         edges_data[(u, v, k)] = {"length": length, "speed_limit": speed_limit}
+        # Store geometry for position interpolation
+        if "geometry" in d:
+            edge_geoms[(u, v, k)] = d["geometry"]
 
     # Node positions (projected coordinates)
     node_pos = {}
@@ -122,10 +127,15 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
             v = veh.path[veh.edge_idx + 1]
             elen = _edge_length(G, u, v)
             frac = min(veh.pos_on_edge / max(elen, 1.0), 1.0)
-            x0, y0 = node_pos[u]
-            x1, y1 = node_pos[v]
-            x = x0 + frac * (x1 - x0)
-            y = y0 + frac * (y1 - y0)
+            geom = edge_geoms.get((u, v, 0))
+            if geom is not None:
+                pt = geom.interpolate(frac, normalized=True)
+                x, y = pt.x, pt.y
+            else:
+                x0, y0 = node_pos[u]
+                x1, y1 = node_pos[v]
+                x = x0 + frac * (x1 - x0)
+                y = y0 + frac * (y1 - y0)
             positions.append((x, y))
             speeds.append(veh.speed)
         frames.append({"positions": positions, "speeds": speeds})
