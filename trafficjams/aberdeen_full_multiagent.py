@@ -49,6 +49,10 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
     if G is None:
         G = fetch_network()
 
+    # Restrict to largest strongly connected component so all OD pairs are reachable
+    largest_scc = max(nx.strongly_connected_components(G), key=len)
+    G = G.subgraph(largest_scc).copy()
+
     nodes = list(G.nodes())
     edges_data = {}
     edge_geoms = {}  # (u, v, k) -> Shapely LineString for interpolation
