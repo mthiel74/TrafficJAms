@@ -1,7 +1,6 @@
 """Animated multi-agent traffic simulation covering all of Aberdeen.
 
-Produces a compact GIF (small figure, low DPI) so the output stays
-manageable for display.
+Produces a compact GIF and a high-quality MP4.
 """
 
 import os, sys, numpy as np
@@ -51,8 +50,8 @@ def main():
     pad = 200
     xmin -= pad; xmax += pad; ymin -= pad; ymax += pad
 
-    # --- Small figure for compact output ---
-    fig, ax = plt.subplots(figsize=(5, 5), facecolor=DARK_BG)
+    # --- Larger figure for high-quality output ---
+    fig, ax = plt.subplots(figsize=(10, 10), facecolor=DARK_BG)
     ax.set_facecolor(DARK_BG)
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
@@ -63,22 +62,22 @@ def main():
     for u, v, d in G.edges(data=True):
         x0, y0 = node_pos[u]
         x1, y1 = node_pos[v]
-        ax.plot([x0, x1], [y0, y1], color="#2a2d3a", lw=0.4, zorder=1)
+        ax.plot([x0, x1], [y0, y1], color="#2a2d3a", lw=0.8, zorder=1)
 
     # Title / subtitle
     fig.text(0.5, 0.96, "Aberdeen: Full City Traffic Simulation",
-             ha="center", fontsize=10, fontweight="bold", color=TEXT_COLOR)
+             ha="center", fontsize=16, fontweight="bold", color=TEXT_COLOR)
     fig.text(0.5, 0.93, f"{n_vehicles} vehicles on real OSM network",
-             ha="center", fontsize=7, color="#565a7a")
-    time_text = fig.text(0.5, 0.02, "", ha="center", fontsize=7,
+             ha="center", fontsize=10, color="#565a7a")
+    time_text = fig.text(0.5, 0.02, "", ha="center", fontsize=10,
                          color=TEXT_COLOR, fontfamily="monospace")
 
     # Vehicle scatter
-    scat = ax.scatter([], [], s=4, c=[], zorder=5, edgecolors="none")
+    scat = ax.scatter([], [], s=10, c=[], zorder=5, edgecolors="none")
 
     # Stats overlay
     stats_text = ax.text(
-        xmin + 60, ymax - 60, "", fontsize=6,
+        xmin + 60, ymax - 60, "", fontsize=8,
         color=TEXT_COLOR, fontfamily="monospace", va="top", zorder=10,
     )
 
@@ -109,12 +108,22 @@ def main():
     anim = FuncAnimation(fig, update, frames=nf, interval=80, blit=False)
     plt.tight_layout(rect=[0, 0.04, 1, 0.92])
 
+    # Save high-quality MP4
+    mp4_path = os.path.join(RESULTS_DIR, "anim_aberdeen_full.mp4")
+    print(f"Saving {mp4_path} ({nf} frames) …")
+    anim.save(mp4_path, writer="ffmpeg", fps=20, dpi=150,
+              savefig_kwargs={"facecolor": DARK_BG},
+              extra_args=["-vcodec", "libx264", "-pix_fmt", "yuv420p",
+                          "-crf", "18", "-preset", "slow"])
+    print(f"MP4 done -> {os.path.getsize(mp4_path) / 1e6:.1f} MB")
+
+    # Save compact GIF
     sp = os.path.join(RESULTS_DIR, "anim_aberdeen_full.gif")
     print(f"Saving {sp} ({nf} frames) …")
     anim.save(sp, writer="pillow", fps=15, dpi=72,
               savefig_kwargs={"facecolor": DARK_BG})
     plt.close()
-    print(f"Done -> {os.path.getsize(sp) / 1e6:.1f} MB")
+    print(f"GIF done -> {os.path.getsize(sp) / 1e6:.1f} MB")
 
 
 if __name__ == "__main__":
