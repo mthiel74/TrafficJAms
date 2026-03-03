@@ -213,20 +213,27 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
                 elen = _edge_length(G, u, v)
                 sl = edges_data.get(e, {"speed_limit": 10.0})["speed_limit"]
 
-                # Find gap to vehicle ahead
+                # Find gap and speed of vehicle ahead
                 key = (u, v)
                 occ = edge_vehicles.get(key, [])
                 gap = elen
-                for j, (pos_j, vj) in enumerate(occ):
+                dv = 0.0  # speed difference (self - leader)
+                for j, (pos_j, vj_idx) in enumerate(occ):
                     if pos_j > veh.pos_on_edge + 0.1:
                         gap = pos_j - veh.pos_on_edge
+                        dv = veh.speed - vehicles[vj_idx].speed
                         break
 
-                # IDM-like acceleration
-                s0 = 3.0
-                desired_gap = s0 + veh.speed * 1.0
-                acc = 2.0 * (1.0 - (veh.speed / max(sl, 0.1)) ** 4
-                             - (desired_gap / max(gap, 0.5)) ** 2)
+                # Full IDM acceleration
+                # Parameters: a=2.0 m/s², b=3.0 m/s², s0=3.0 m, T=1.5 s, delta=4
+                a_max = 2.0    # max acceleration
+                b_comf = 3.0   # comfortable deceleration
+                s0 = 3.0       # minimum gap
+                T_hw = 1.5     # safe time headway
+                delta = 4      # acceleration exponent
+                s_star = s0 + max(veh.speed * T_hw + veh.speed * dv / (2.0 * (a_max * b_comf) ** 0.5), 0.0)
+                acc = a_max * (1.0 - (veh.speed / max(sl, 0.1)) ** delta
+                              - (s_star / max(gap, 0.5)) ** 2)
                 veh.speed = max(veh.speed + acc * dt, 0.0)
                 veh.speed = min(veh.speed, sl)
                 veh.pos_on_edge += veh.speed * dt
