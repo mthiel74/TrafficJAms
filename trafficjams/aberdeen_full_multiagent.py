@@ -78,13 +78,16 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
     # Vehicle class
     # ------------------------------------------------------------------
     class Vehicle:
-        __slots__ = ["path", "edge_idx", "pos_on_edge", "speed", "active"]
+        __slots__ = ["path", "edge_idx", "pos_on_edge", "speed", "active",
+                     "spawn_time", "spawned"]
         def __init__(self):
             self.path = []
             self.edge_idx = 0
             self.pos_on_edge = 0.0
             self.speed = 0.0
             self.active = True
+            self.spawn_time = 0.0
+            self.spawned = False
 
     # ------------------------------------------------------------------
     # Create vehicles with random origin-destination pairs
@@ -106,8 +109,12 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
         else:
             veh.pos_on_edge = 0.0
             veh.speed = 0.0
+            # Stagger entry: vehicles spawn over the first 60 seconds
+            veh.spawn_time = rng.uniform(0, 60.0)
+            veh.spawned = False
         vehicles.append(veh)
 
+    sim_time = 0.0
     spf = max(1, int(T / dt / n_frames))  # steps per frame
 
     # ------------------------------------------------------------------
@@ -119,7 +126,7 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
         positions = []
         speeds = []
         for veh in vehicles:
-            if not veh.active or veh.edge_idx >= len(veh.path) - 1:
+            if not veh.active or not veh.spawned or veh.edge_idx >= len(veh.path) - 1:
                 continue
             u = veh.path[veh.edge_idx]
             v = veh.path[veh.edge_idx + 1]
@@ -145,10 +152,16 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
     # ------------------------------------------------------------------
     for step in range(n_frames - 1):
         for _ in range(spf):
+            sim_time += dt
+            # Activate vehicles whose spawn time has arrived
+            for veh in vehicles:
+                if veh.active and not veh.spawned and sim_time >= veh.spawn_time:
+                    veh.spawned = True
+
             # Build per-edge occupancy lists
             edge_vehicles = {}
             for vi, veh in enumerate(vehicles):
-                if not veh.active or veh.edge_idx >= len(veh.path) - 1:
+                if not veh.active or not veh.spawned or veh.edge_idx >= len(veh.path) - 1:
                     continue
                 u = veh.path[veh.edge_idx]
                 v = veh.path[veh.edge_idx + 1]
@@ -162,7 +175,7 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
 
             # Update vehicles
             for vi, veh in enumerate(vehicles):
-                if not veh.active or veh.edge_idx >= len(veh.path) - 1:
+                if not veh.active or not veh.spawned or veh.edge_idx >= len(veh.path) - 1:
                     continue
                 u = veh.path[veh.edge_idx]
                 v = veh.path[veh.edge_idx + 1]
