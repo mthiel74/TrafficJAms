@@ -89,6 +89,12 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
             self.spawn_time = 0.0
             self.spawned = False
 
+    def _noisy_route(G, o, d, rng):
+        """Shortest path with random noise on edge weights for route diversity."""
+        for u, v, k, data in G.edges(data=True, keys=True):
+            data["noisy_length"] = data.get("length", 50.0) * rng.uniform(0.8, 1.5)
+        return nx.shortest_path(G, o, d, weight="noisy_length")
+
     # ------------------------------------------------------------------
     # Create vehicles with random origin-destination pairs
     # ------------------------------------------------------------------
@@ -98,7 +104,7 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
         for _attempt in range(30):
             o, d = rng.choice(nodes, size=2, replace=False)
             try:
-                path = nx.shortest_path(G, o, d, weight="length")
+                path = _noisy_route(G, o, d, rng)
                 if len(path) >= 3:
                     veh.path = path
                     break
@@ -211,7 +217,7 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
                             dest = rng.choice(nodes)
                             if dest != origin:
                                 try:
-                                    new_path = nx.shortest_path(G, origin, dest, weight="length")
+                                    new_path = _noisy_route(G, origin, dest, rng)
                                     if len(new_path) >= 2:
                                         veh.path = new_path
                                         veh.edge_idx = 0
