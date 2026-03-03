@@ -104,10 +104,8 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
         if not veh.path:
             veh.active = False
         else:
-            elen = _edge_length(G, veh.path[0], veh.path[1])
-            veh.pos_on_edge = rng.uniform(0, 0.3) * elen
-            e = (veh.path[0], veh.path[1], 0)
-            veh.speed = edges_data.get(e, {"speed_limit": 10.0})["speed_limit"] * rng.uniform(0.3, 0.7)
+            veh.pos_on_edge = 0.0
+            veh.speed = 0.0
         vehicles.append(veh)
 
     spf = max(1, int(T / dt / n_frames))  # steps per frame
