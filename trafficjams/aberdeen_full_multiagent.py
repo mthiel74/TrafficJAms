@@ -109,19 +109,14 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
     }
 
     def _noisy_route(G, o, d, rng):
-        """Pick randomly from k-shortest paths with hierarchy-biased noisy weights."""
+        """Shortest path with hierarchy-biased noisy weights for route diversity."""
         for u, v, k, data in G.edges(data=True, keys=True):
             hw = data.get("highway", "unclassified")
             if isinstance(hw, list):
                 hw = hw[0]
             hf = _highway_cost_factor.get(hw, 1.0)
             data["noisy_length"] = data.get("length", 50.0) * hf * rng.uniform(0.8, 1.5)
-        try:
-            paths = list(nx.shortest_simple_paths(G, o, d, weight="noisy_length"))
-            candidates = paths[:3]  # up to 3 shortest paths
-            return candidates[rng.integers(len(candidates))]
-        except (nx.NetworkXNoPath, nx.NodeNotFound):
-            return nx.shortest_path(G, o, d, weight="noisy_length")
+        return nx.shortest_path(G, o, d, weight="noisy_length")
 
     # ------------------------------------------------------------------
     # Create vehicles with random origin-destination pairs
