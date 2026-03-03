@@ -58,11 +58,17 @@ def main():
     ax.set_aspect("equal")
     ax.axis("off")
 
-    # Draw streets
-    for u, v, d in G.edges(data=True):
-        x0, y0 = node_pos[u]
-        x1, y1 = node_pos[v]
-        ax.plot([x0, x1], [y0, y1], color="#2a2d3a", lw=0.8, zorder=1)
+    # Draw streets using actual road geometry where available
+    for u, v, k, d in G.edges(data=True, keys=True):
+        if "geometry" in d:
+            coords = list(d["geometry"].coords)
+            xs_line = [c[0] for c in coords]
+            ys_line = [c[1] for c in coords]
+        else:
+            x0, y0 = node_pos[u]
+            x1, y1 = node_pos[v]
+            xs_line, ys_line = [x0, x1], [y0, y1]
+        ax.plot(xs_line, ys_line, color="#2a2d3a", lw=0.8, zorder=1)
 
     # Title / subtitle
     fig.text(0.5, 0.96, "Aberdeen: Full City Traffic Simulation",
