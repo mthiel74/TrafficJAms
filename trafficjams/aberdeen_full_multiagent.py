@@ -236,6 +236,19 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
                 if veh.pos_on_edge >= elen:
                     veh.pos_on_edge -= elen
                     veh.edge_idx += 1
+                    # Probabilistic detour: 10% chance to deviate
+                    if veh.edge_idx < len(veh.path) - 1 and rng.random() < 0.1:
+                        current_node = veh.path[veh.edge_idx]
+                        neighbours = list(G.successors(current_node))
+                        if len(neighbours) > 1:
+                            detour_next = neighbours[rng.integers(len(neighbours))]
+                            dest = veh.path[-1]
+                            try:
+                                tail = nx.shortest_path(G, detour_next, dest, weight="length")
+                                veh.path = list(veh.path[:veh.edge_idx]) + [current_node] + tail
+                                # edge_idx stays the same (pointing at current_node)
+                            except nx.NetworkXNoPath:
+                                pass  # keep original path
                     if veh.edge_idx >= len(veh.path) - 1:
                         origin = veh.path[-1]
                         for _attempt in range(15):
