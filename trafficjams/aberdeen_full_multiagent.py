@@ -93,10 +93,25 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
             self.spawn_time = 0.0
             self.spawned = False
 
+    # Road hierarchy multipliers: major roads get lower cost, encouraging use
+    _highway_cost_factor = {
+        "motorway": 0.5, "motorway_link": 0.6,
+        "trunk": 0.6, "trunk_link": 0.7,
+        "primary": 0.7, "primary_link": 0.8,
+        "secondary": 0.85, "secondary_link": 0.9,
+        "tertiary": 0.95, "tertiary_link": 1.0,
+        "residential": 1.2, "service": 1.4,
+        "living_street": 1.5, "unclassified": 1.1,
+    }
+
     def _noisy_route(G, o, d, rng):
-        """Pick randomly from k-shortest paths with noisy weights."""
+        """Pick randomly from k-shortest paths with hierarchy-biased noisy weights."""
         for u, v, k, data in G.edges(data=True, keys=True):
-            data["noisy_length"] = data.get("length", 50.0) * rng.uniform(0.8, 1.5)
+            hw = data.get("highway", "unclassified")
+            if isinstance(hw, list):
+                hw = hw[0]
+            hf = _highway_cost_factor.get(hw, 1.0)
+            data["noisy_length"] = data.get("length", 50.0) * hf * rng.uniform(0.8, 1.5)
         try:
             paths = list(nx.shortest_simple_paths(G, o, d, weight="noisy_length"))
             candidates = paths[:3]  # up to 3 shortest paths
