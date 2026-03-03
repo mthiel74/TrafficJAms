@@ -90,10 +90,15 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
             self.spawned = False
 
     def _noisy_route(G, o, d, rng):
-        """Shortest path with random noise on edge weights for route diversity."""
+        """Pick randomly from k-shortest paths with noisy weights."""
         for u, v, k, data in G.edges(data=True, keys=True):
             data["noisy_length"] = data.get("length", 50.0) * rng.uniform(0.8, 1.5)
-        return nx.shortest_path(G, o, d, weight="noisy_length")
+        try:
+            paths = list(nx.shortest_simple_paths(G, o, d, weight="noisy_length"))
+            candidates = paths[:3]  # up to 3 shortest paths
+            return candidates[rng.integers(len(candidates))]
+        except (nx.NetworkXNoPath, nx.NodeNotFound):
+            return nx.shortest_path(G, o, d, weight="noisy_length")
 
     # ------------------------------------------------------------------
     # Create vehicles with random origin-destination pairs
