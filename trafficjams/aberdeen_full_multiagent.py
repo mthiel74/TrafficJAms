@@ -213,16 +213,29 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
                 elen = _edge_length(G, u, v)
                 sl = edges_data.get(e, {"speed_limit": 10.0})["speed_limit"]
 
-                # Find gap and speed of vehicle ahead
+                # Find gap and speed of vehicle ahead (same edge)
                 key = (u, v)
                 occ = edge_vehicles.get(key, [])
-                gap = elen
+                gap = elen - veh.pos_on_edge  # default: distance to end of edge
                 dv = 0.0  # speed difference (self - leader)
+                found_leader = False
                 for j, (pos_j, vj_idx) in enumerate(occ):
                     if pos_j > veh.pos_on_edge + 0.1:
                         gap = pos_j - veh.pos_on_edge
                         dv = veh.speed - vehicles[vj_idx].speed
+                        found_leader = True
                         break
+                # Cross-edge gap: check first vehicle on the next edge
+                if not found_leader and veh.edge_idx + 2 < len(veh.path):
+                    next_u = veh.path[veh.edge_idx + 1]
+                    next_v = veh.path[veh.edge_idx + 2]
+                    next_occ = edge_vehicles.get((next_u, next_v), [])
+                    if next_occ:
+                        first_pos, first_idx = next_occ[0]
+                        cross_gap = (elen - veh.pos_on_edge) + first_pos
+                        if cross_gap < gap:
+                            gap = cross_gap
+                            dv = veh.speed - vehicles[first_idx].speed
 
                 # Full IDM acceleration
                 # Parameters: a=2.0 m/s², b=3.0 m/s², s0=3.0 m, T=1.5 s, delta=4
