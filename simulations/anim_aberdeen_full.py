@@ -48,7 +48,7 @@ def main():
     print(f"Fetching full Aberdeen street network & simulating {n_vehicles} vehicles ...")
     result = aberdeen_full_multiagent.simulate(
         n_vehicles=n_vehicles,
-        T=500,
+        T=5000,
         dt=1.0,
         n_frames=n_frames,
     )
@@ -181,7 +181,7 @@ def main():
         n_active = len(pos)
         mean_spd = np.mean(spd) if spd else 0
         mean_kmh = mean_spd * 3.6
-        t_sec = frame * (500 / nf)
+        t_sec = frame * (5000 / nf)
 
         time_text.set_text(
             f"t = {t_sec:5.0f} s  |  {n_active} vehicles  |  v\u0304 = {mean_kmh:.0f} km/h"

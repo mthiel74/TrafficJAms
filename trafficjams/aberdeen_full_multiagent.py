@@ -150,7 +150,7 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
 
     # Intersection control setup
     node_class = classify_nodes(G)
-    signal_controllers = build_signal_controllers(G, node_class, rng=rng)
+    signal_controllers = build_signal_controllers(G, node_class, cycle_time=60.0, rng=rng)
     # Use unique neighbor count (not MultiDiGraph degree which inflates values)
     node_arm_count = {}
     for n in G.nodes():
@@ -255,52 +255,32 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
                 elen = _edge_length(G, u, v)
                 sl = edges_data.get(e, {"speed_limit": 10.0})["speed_limit"]
 
-                # Find gap and speed of vehicle ahead (same edge)
+                # Find gap and speed of vehicle ahead (same edge only)
                 key = (u, v)
                 occ = edge_vehicles.get(key, [])
-                gap = elen - veh.pos_on_edge  # default: distance to end of edge
-                dv = 0.0  # speed difference (self - leader)
-                found_leader = False
+                gap = elen  # default: free road ahead
+                dv = 0.0
                 for j, (pos_j, vj_idx) in enumerate(occ):
                     if pos_j > veh.pos_on_edge + 0.1:
                         gap = pos_j - veh.pos_on_edge
                         dv = veh.speed - vehicles[vj_idx].speed
-                        found_leader = True
                         break
-                # Cross-edge gap: check first vehicle on the next edge
-                if not found_leader and veh.edge_idx + 2 < len(veh.path):
-                    next_u = veh.path[veh.edge_idx + 1]
-                    next_v = veh.path[veh.edge_idx + 2]
-                    next_occ = edge_vehicles.get((next_u, next_v), [])
-                    if next_occ:
-                        first_pos, first_idx = next_occ[0]
-                        cross_gap = (elen - veh.pos_on_edge) + first_pos
-                        if cross_gap < gap:
-                            gap = cross_gap
-                            dv = veh.speed - vehicles[first_idx].speed
 
-                # Intersection control via speed-limit reduction only.
-                # Never skip the IDM or edge-advance logic — that causes
-                # permanent gridlock. Instead, reduce sl so the IDM naturally
-                # decelerates, and restore sl when the constraint clears.
+                # Intersection control via speed-limit reduction.
+                # Only apply close to the stop line to avoid long deceleration
+                # zones that make most of the network appear congested.
                 dist_to_node = elen - veh.pos_on_edge
-                LOOKAHEAD = 40.0
-                if dist_to_node < LOOKAHEAD and dist_to_node > 0:
+                if dist_to_node < 15.0 and dist_to_node > 0:
                     v_class = node_class.get(v, "uncontrolled")
                     if v_class == "signal":
                         ctrl = signal_controllers.get(v)
                         if ctrl and not ctrl.is_green((u, v), sim_time):
-                            # Red light: reduce speed limit proportional to distance
-                            sl = min(sl, max(dist_to_node * 0.15, 0.1))
+                            sl = min(sl, max(dist_to_node * 0.5, 0.5))
                     elif v_class == "roundabout":
                         if not roundabout_can_enter(G, v, edge_vehicles, vehicles,
                                                     dist_to_node, veh.speed,
                                                     approach_edge=(u, v)):
-                            sl = min(sl, max(dist_to_node * 0.15, 0.1))
-                    elif v_class in ("stop", "give_way"):
-                        arms = node_arm_count.get(v, 2)
-                        if arms >= 4:
-                            sl = min(sl, sl * 0.5)
+                            sl = min(sl, max(dist_to_node * 0.5, 0.5))
 
                 # Full IDM acceleration
                 # Parameters: a=2.0 m/s², b=3.0 m/s², s0=2.0 m, T=1.2 s, delta=4
