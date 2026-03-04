@@ -9,6 +9,10 @@ import numpy as np
 import osmnx as ox
 import networkx as nx
 from shapely.geometry import LineString
+from trafficjams.intersection_control import (
+    classify_nodes, build_signal_controllers,
+    roundabout_can_enter, intersection_virtual_gap,
+)
 
 
 def fetch_network():
@@ -144,6 +148,11 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
             veh.spawned = False
         vehicles.append(veh)
 
+    # Intersection control setup
+    node_class = classify_nodes(G)
+    signal_controllers = build_signal_controllers(G, node_class, rng=rng)
+    node_degree_map = dict(G.degree())
+
     sim_time = 0.0
     spf = max(1, int(T / dt / n_frames))  # steps per frame
 
@@ -236,6 +245,26 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
                         if cross_gap < gap:
                             gap = cross_gap
                             dv = veh.speed - vehicles[first_idx].speed
+
+                # Intersection control: virtual gap override
+                dist_to_node = elen - veh.pos_on_edge
+                LOOKAHEAD = 60.0
+                if dist_to_node < LOOKAHEAD and dist_to_node > 0:
+                    v_class = node_class.get(v, "uncontrolled")
+                    if v_class == "signal":
+                        ctrl = signal_controllers.get(v)
+                        if ctrl and not ctrl.is_green((u, v), sim_time):
+                            gap = min(gap, dist_to_node)
+                    elif v_class == "roundabout":
+                        if not roundabout_can_enter(G, v, edge_vehicles, vehicles,
+                                                    dist_to_node, veh.speed):
+                            gap = min(gap, dist_to_node)
+                    elif v_class in ("stop", "give_way", "uncontrolled"):
+                        deg = node_degree_map.get(v, 3)
+                        if deg >= 4:
+                            vgap = intersection_virtual_gap(deg, v_class)
+                            if dist_to_node < vgap:
+                                gap = min(gap, dist_to_node)
 
                 # Full IDM acceleration
                 # Parameters: a=2.0 m/s², b=3.0 m/s², s0=3.0 m, T=1.5 s, delta=4
