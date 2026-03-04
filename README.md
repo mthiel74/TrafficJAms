@@ -32,6 +32,31 @@ Godunov scheme solving the LWR hyperbolic PDE with Greenshields fundamental diag
 
 ![Aberdeen Multi-Agent Animation](results/anim_aberdeen_agents.gif)
 
+### Aberdeen Full City: 800 Vehicles
+
+800 vehicles on the full Aberdeen drivable road network. Vehicles follow shortest paths with staggered entry and re-route on arrival at their destination.
+
+![Aberdeen Full City Animation](results/anim_aberdeen_full.gif)
+
+### Aberdeen Full City v2: 1200 Vehicles with Realistic Traffic Control
+
+1200 vehicles on the complete Aberdeen road network with 20 simulation improvements:
+- **Full IDM car-following** with proper interaction terms (acceleration, braking, speed difference with leader)
+- **Traffic signals** at OSM-tagged signalised intersections (90s cycle, UK standard round-robin phases)
+- **Roundabout yield model** with 4.5s critical headway gap acceptance (TRL Report 281)
+- **Intersection delays** at high-degree uncontrolled nodes
+- **Road hierarchy routing** — trunk/primary roads preferred for through-traffic; residential roads carry local trips
+- **Route diversity** via noisy edge weights and probabilistic detours (10% chance at each junction)
+- **Staggered entry** over 60 seconds for realistic build-up
+- **Cross-edge gap checking** prevents vehicles teleporting through jams at edge boundaries
+- **Curved road geometry** from OSMnx for both rendering and vehicle interpolation
+- **Road width hierarchy** — major roads drawn wider than residential streets
+- **Dynamic congestion colouring** — road segments turn orange/red when traffic slows
+- **Lateral lane offsets** for a multi-lane visual effect
+- **Speed colour legend** (0–48 km/h scale bar)
+
+![Aberdeen Full City v2 Animation](results/anim_aberdeen_full_v2.gif)
+
 ### More Animations
 
 | Animation | Description |
