@@ -94,21 +94,33 @@ def build_signal_controllers(G, node_class, cycle_time=90.0, rng=None):
 
 
 def roundabout_can_enter(G, node_id, edge_vehicles, vehicles, elen_remaining,
-                         veh_speed, critical_headway=4.5):
+                         veh_speed, critical_headway=2.5,
+                         approach_edge=None):
     """Check if a vehicle can enter a roundabout (gap acceptance).
 
-    Returns True if there is a sufficient gap in circulating traffic.
-    UK critical headway ~4.5s (TRL Report 281).
+    Only checks circulating traffic (edges with junction=roundabout),
+    not other approach arms, to avoid deadlock.
+    Reduced critical headway (2.5s) for fluid simulation.
     """
-    # Check all vehicles on edges leading to this roundabout node
     for u in G.predecessors(node_id):
+        if (u, node_id) == approach_edge:
+            continue  # don't check our own approach
+        # Only check edges that are part of the roundabout circulatory
+        edge_data = G[u][node_id].get(0, {})
+        junc = edge_data.get("junction", "")
+        if isinstance(junc, list):
+            junc = junc[0]
+        if junc != "roundabout":
+            continue  # skip non-roundabout approaches
         occ = edge_vehicles.get((u, node_id), [])
         for pos_j, vj_idx in occ:
             leader = vehicles[vj_idx]
             if leader.speed < 0.5:
                 continue
-            elen = G[u][node_id][0].get("length", 50.0)
+            elen = edge_data.get("length", 50.0)
             dist_to_node = elen - pos_j
+            if dist_to_node < 0:
+                continue
             time_to_arrive = dist_to_node / max(leader.speed, 0.1)
             if time_to_arrive < critical_headway:
                 return False

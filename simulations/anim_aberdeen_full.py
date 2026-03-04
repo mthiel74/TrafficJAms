@@ -204,7 +204,7 @@ def main():
     # Save compact GIF (new filename, additional to existing)
     sp = os.path.join(RESULTS_DIR, "anim_aberdeen_full_v2.gif")
     print(f"Saving {sp} ({nf} frames) ...")
-    anim.save(sp, writer="pillow", fps=15, dpi=80,
+    anim.save(sp, writer="pillow", fps=15, dpi=50,
               savefig_kwargs={"facecolor": DARK_BG})
     plt.close()
     print(f"GIF done -> {os.path.getsize(sp) / 1e6:.1f} MB")

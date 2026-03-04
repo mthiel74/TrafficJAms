@@ -151,7 +151,10 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
     # Intersection control setup
     node_class = classify_nodes(G)
     signal_controllers = build_signal_controllers(G, node_class, rng=rng)
-    node_degree_map = dict(G.degree())
+    # Use unique neighbor count (not MultiDiGraph degree which inflates values)
+    node_arm_count = {}
+    for n in G.nodes():
+        node_arm_count[n] = len(set(G.predecessors(n)) | set(G.successors(n)))
 
     sim_time = 0.0
     spf = max(1, int(T / dt / n_frames))  # steps per frame
@@ -276,36 +279,41 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
                             gap = cross_gap
                             dv = veh.speed - vehicles[first_idx].speed
 
-                # Intersection control: virtual gap override
+                # Intersection control via speed-limit reduction only.
+                # Never skip the IDM or edge-advance logic — that causes
+                # permanent gridlock. Instead, reduce sl so the IDM naturally
+                # decelerates, and restore sl when the constraint clears.
                 dist_to_node = elen - veh.pos_on_edge
-                LOOKAHEAD = 60.0
+                LOOKAHEAD = 40.0
                 if dist_to_node < LOOKAHEAD and dist_to_node > 0:
                     v_class = node_class.get(v, "uncontrolled")
                     if v_class == "signal":
                         ctrl = signal_controllers.get(v)
                         if ctrl and not ctrl.is_green((u, v), sim_time):
-                            gap = min(gap, dist_to_node)
+                            # Red light: reduce speed limit proportional to distance
+                            sl = min(sl, max(dist_to_node * 0.15, 0.1))
                     elif v_class == "roundabout":
                         if not roundabout_can_enter(G, v, edge_vehicles, vehicles,
-                                                    dist_to_node, veh.speed):
-                            gap = min(gap, dist_to_node)
-                    elif v_class in ("stop", "give_way", "uncontrolled"):
-                        deg = node_degree_map.get(v, 3)
-                        if deg >= 4:
-                            vgap = intersection_virtual_gap(deg, v_class)
-                            if dist_to_node < vgap:
-                                gap = min(gap, dist_to_node)
+                                                    dist_to_node, veh.speed,
+                                                    approach_edge=(u, v)):
+                            sl = min(sl, max(dist_to_node * 0.15, 0.1))
+                    elif v_class in ("stop", "give_way"):
+                        arms = node_arm_count.get(v, 2)
+                        if arms >= 4:
+                            sl = min(sl, sl * 0.5)
 
                 # Full IDM acceleration
-                # Parameters: a=2.0 m/s², b=3.0 m/s², s0=3.0 m, T=1.5 s, delta=4
+                # Parameters: a=2.0 m/s², b=3.0 m/s², s0=2.0 m, T=1.2 s, delta=4
                 a_max = 2.0    # max acceleration
                 b_comf = 3.0   # comfortable deceleration
-                s0 = 3.0       # minimum gap
-                T_hw = 1.5     # safe time headway
+                s0 = 2.0       # minimum gap (reduced to prevent gridlock)
+                T_hw = 1.2     # safe time headway
                 delta = 4      # acceleration exponent
                 s_star = s0 + max(veh.speed * T_hw + veh.speed * dv / (2.0 * (a_max * b_comf) ** 0.5), 0.0)
+                # Ensure gap > s_star for stopped vehicles so they can restart
+                effective_gap = max(gap, s0 + 0.5)
                 acc = a_max * (1.0 - (veh.speed / max(sl, 0.1)) ** delta
-                              - (s_star / max(gap, 0.5)) ** 2)
+                              - (s_star / effective_gap) ** 2)
                 veh.speed = max(veh.speed + acc * dt, 0.0)
                 veh.speed = min(veh.speed, sl)
                 veh.pos_on_edge += veh.speed * dt
