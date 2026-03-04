@@ -201,11 +201,17 @@ def main():
                           "-crf", "18", "-preset", "slow"])
     print(f"MP4 done -> {os.path.getsize(mp4_path) / 1e6:.1f} MB")
 
-    # Save compact GIF (new filename, additional to existing)
+    # Save compact GIF (small enough for GitHub inline rendering <5 MB)
     sp = os.path.join(RESULTS_DIR, "anim_aberdeen_full_v2.gif")
-    print(f"Saving {sp} ({nf} frames) ...")
-    anim.save(sp, writer="pillow", fps=15, dpi=50,
-              savefig_kwargs={"facecolor": DARK_BG})
+    print(f"Saving {sp} (every 2nd frame) ...")
+    # Use ffmpeg to convert MP4 to a compact GIF (skip every other frame)
+    import subprocess
+    subprocess.run([
+        "ffmpeg", "-y", "-i", mp4_path,
+        "-vf", "fps=10,scale=700:-1:flags=lanczos",
+        "-gifflags", "+transdiff",
+        sp,
+    ], check=True, capture_output=True)
     plt.close()
     print(f"GIF done -> {os.path.getsize(sp) / 1e6:.1f} MB")
 
