@@ -164,6 +164,8 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
     def _record():
         positions = []
         speeds = []
+        headings = []  # for directional markers
+        edge_speed_accum = {}  # (u,v) -> [speeds] for congestion colouring
         for veh in vehicles:
             if not veh.active or not veh.spawned or veh.edge_idx >= len(veh.path) - 1:
                 continue
@@ -175,14 +177,42 @@ def simulate(G=None, n_vehicles=800, T=400, dt=1.0, n_frames=200):
             if geom is not None:
                 pt = geom.interpolate(frac, normalized=True)
                 x, y = pt.x, pt.y
+                # Compute heading from geometry tangent
+                frac2 = min(frac + 0.01, 1.0)
+                pt2 = geom.interpolate(frac2, normalized=True)
+                dx, dy = pt2.x - pt.x, pt2.y - pt.y
             else:
                 x0, y0 = node_pos[u]
                 x1, y1 = node_pos[v]
                 x = x0 + frac * (x1 - x0)
                 y = y0 + frac * (y1 - y0)
-            positions.append((x, y))
+                dx, dy = x1 - x0, y1 - y0
+            heading = np.arctan2(dy, dx) if (dx != 0 or dy != 0) else 0.0
+            # Point 19: Lateral lane offset for multi-lane feel
+            ek = (u, v)
+            lane_count = edge_speed_accum.get(ek, [])
+            lane_idx = len(lane_count)  # current count before append
+            offset_m = (lane_idx % 3 - 1) * 4.0  # -4, 0, +4 metres
+            perp_x = -np.sin(heading) * offset_m
+            perp_y = np.cos(heading) * offset_m
+            positions.append((x + perp_x, y + perp_y))
             speeds.append(veh.speed)
-        frames.append({"positions": positions, "speeds": speeds})
+            headings.append(heading)
+            # Accumulate per-edge speeds
+            ek = (u, v)
+            if ek not in edge_speed_accum:
+                edge_speed_accum[ek] = []
+            edge_speed_accum[ek].append(veh.speed)
+        # Compute mean speed per edge
+        edge_mean_speeds = {}
+        for ek, spds in edge_speed_accum.items():
+            edge_mean_speeds[ek] = np.mean(spds)
+        frames.append({
+            "positions": positions,
+            "speeds": speeds,
+            "headings": headings,
+            "edge_speeds": edge_mean_speeds,
+        })
 
     _record()
 
