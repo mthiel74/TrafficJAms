@@ -36,6 +36,11 @@ Get["NagelSchreckenberg.wl"];
 nsRes = NagelSchreckenberg`SimulateNaSch[];
 NagelSchreckenberg`PlotNaSch[nsRes, "results/nagel_schreckenberg.png"];
 
+banner["Nagel-Schreckenberg (2-lane)"];
+Get["NagelSchreckenberg2Lane.wl"];
+ns2Res = NagelSchreckenberg2Lane`SimulateNaSch2[];
+NagelSchreckenberg2Lane`PlotNaSch2[ns2Res, "results/nasch_2lane.png"];
+
 banner["M/D/1 Queueing"];
 Get["Queueing.wl"];
 qRes = Queueing`SimulateQueueing[];

@@ -11,6 +11,7 @@ standalone package that mirrors one model:
 | `LWR.wl`                          | Lighthill–Whitham–Richards (Godunov)     |
 | `PayneWhitham.wl`                 | Payne–Whitham second-order PDE           |
 | `NagelSchreckenberg.wl`           | Nagel–Schreckenberg stochastic CA        |
+| `NagelSchreckenberg2Lane.wl`      | Two-lane NaSch with lane-changing        |
 | `Queueing.wl`                     | M/D/1 signalised-corridor queue          |
 | `NetworkAssignment.wl`            | Beckmann / BPR Wardrop equilibrium       |
 | `AberdeenNetwork.wl`              | 15-node Aberdeen Wardrop network         |
@@ -41,6 +42,7 @@ Each model exports a PNG into `results/`:
 | LWR / Godunov | `results/lwr.png` |
 | Payne-Whitham | `results/payne_whitham.png` |
 | Nagel-Schreckenberg | `results/nagel_schreckenberg.png` |
+| NaSch 2-lane | `results/nasch_2lane.png` |
 | M/D/1 queueing | `results/queueing.png` |
 | Network assignment | `results/network_assignment.png` |
 | Aberdeen Wardrop network | `results/aberdeen_network.png` |
