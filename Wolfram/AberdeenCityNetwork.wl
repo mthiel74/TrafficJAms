@@ -21,6 +21,8 @@ BeginPackage["AberdeenCityNetwork`"];
 LoadAberdeenNetwork::usage = "LoadAberdeenNetwork[] (or LoadAberdeenNetwork[path]) parses an Overpass JSON dump into a drivable-road graph association with keys graph, nodePos, edgeLength, edgeSpeed, edges, nodeIds.";
 SimulateAberdeenCity::usage = "SimulateAberdeenCity[net, opts] runs a multi-agent IDM-like simulation on the parsed network and returns a per-frame position/speed record.";
 PlotAberdeenCity::usage = "PlotAberdeenCity[sim] renders the final frame (vehicles coloured by speed) on the road network.";
+AnimateAberdeenCity::usage = "AnimateAberdeenCity[sim, path] exports an animated GIF with one frame per simulation frame. AnimateAberdeenCity[sim] returns a ListAnimate.";
+RenderAberdeenFrame::usage = "RenderAberdeenFrame[sim, i] renders frame i.";
 
 Begin["`Private`"];
 
@@ -373,6 +375,69 @@ PlotAberdeenCity[sim_Association, OptionsPattern[]] := Module[
 
 PlotAberdeenCity[sim_Association, path_String] := Module[{g = PlotAberdeenCity[sim]},
   Export[path, g, ImageResolution -> 150]; path];
+
+(* -------- Animation -------- *)
+
+RenderAberdeenFrame[sim_Association, i_Integer] := Module[
+  {net, frames, frame, bounds, edgeLines, vehicleGraphics, xr, yr, ar,
+   nodePos, edges, speeds, positions, vmax, nFrames},
+
+  net = sim["net"];
+  frames = sim["frames"];
+  nFrames = Length[frames];
+  frame = frames[[Clip[i, {1, nFrames}]]];
+  positions = frame["positions"];
+  speeds = frame["speeds"];
+  vmax = 20.0;
+
+  nodePos = net["nodePos"];
+  edges = net["edges"];
+
+  edgeLines = Line[{nodePos[#[[1]]], nodePos[#[[2]]]}] & /@ edges;
+  vehicleGraphics = MapThread[
+    {Blend[{RGBColor[0.85, 0.1, 0.1], RGBColor[1.0, 0.85, 0.2],
+            RGBColor[0.1, 0.7, 0.2]}, Min[#2/vmax, 1.0]],
+     Disk[#1, 20]} &,
+    {positions, speeds}
+  ];
+
+  {xr, yr} = net["bounds"];
+  ar = (yr[[2]] - yr[[1]])/(xr[[2]] - xr[[1]]);
+
+  Graphics[
+    {
+      {GrayLevel[0.75], Thickness[0.0015], edgeLines},
+      {EdgeForm[Darker[Gray]], vehicleGraphics}
+    },
+    PlotRange -> {xr, yr},
+    AspectRatio -> ar,
+    Background -> GrayLevel[0.95],
+    PlotLabel -> Row[{"Aberdeen city centre: ", Length[positions],
+                       " vehicles, frame ", i, "/", nFrames}],
+    ImageSize -> 500
+  ]
+];
+
+Options[AnimateAberdeenCity] = {"frameRate" -> 20, "stride" -> 1};
+
+AnimateAberdeenCity[sim_Association, OptionsPattern[]] := Module[
+  {frames, stride, idx},
+  stride = OptionValue["stride"];
+  idx = Range[1, Length[sim["frames"]], stride];
+  ListAnimate[RenderAberdeenFrame[sim, #] & /@ idx,
+    AnimationRate -> OptionValue["frameRate"]]
+];
+
+AnimateAberdeenCity[sim_Association, path_String, opts : OptionsPattern[]] := Module[
+  {stride, idx, images, fr},
+  stride = OptionValue["stride"];
+  fr = OptionValue["frameRate"];
+  idx = Range[1, Length[sim["frames"]], stride];
+  images = RenderAberdeenFrame[sim, #] & /@ idx;
+  Export[path, images,
+    "DisplayDurations" -> ConstantArray[1.0/fr, Length[images]]];
+  path
+];
 
 End[];
 EndPackage[];

@@ -45,6 +45,11 @@ Each model exports a PNG into `results/`:
 | Network assignment | `results/network_assignment.png` |
 | Aberdeen Wardrop network | `results/aberdeen_network.png` |
 | Aberdeen city multi-agent | `results/aberdeen_city.png` |
+| Aberdeen city animation | `results/aberdeen_city.gif` |
+
+### Aberdeen city animation
+
+![Aberdeen city multi-agent animation](results/aberdeen_city.gif)
 
 ## Notes on the port
 
