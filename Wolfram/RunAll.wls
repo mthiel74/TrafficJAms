@@ -46,6 +46,11 @@ Get["Queueing.wl"];
 qRes = Queueing`SimulateQueueing[];
 Queueing`PlotQueueing[qRes, "results/queueing.png"];
 
+banner["Signal Optimisation"];
+Get["SignalOptimisation.wl"];
+soRes = SignalOptimisation`SimulateSignalOpt[];
+SignalOptimisation`PlotSignalOpt[soRes, "results/signal_optimisation.png"];
+
 banner["Network Assignment"];
 Get["NetworkAssignment.wl"];
 naRes = NetworkAssignment`SimulateAssignment[];
