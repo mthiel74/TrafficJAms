@@ -12,7 +12,6 @@ BeginPackage["Bando`"];
 OptimalVelocity::usage = "OptimalVelocity[s, vmax, sc] returns the Bando optimal-velocity target at headway s.";
 SimulateBando::usage = "SimulateBando[opts] runs the Bando OVM on a ring road.";
 PlotBando::usage = "PlotBando[result] draws trajectory/mean-speed plots.";
-AnimateBando::usage = "AnimateBando[result, path] exports a ring-road animation to an animated GIF at path.";
 
 Begin["`Private`"];
 
@@ -37,13 +36,12 @@ Options[SimulateBando] = {
   "dt" -> 0.1,
   "kappa" -> 1.0,
   "vmax" -> 15.0,
-  "sc" -> 25.0,
-  "perturbation" -> 5.0     (* backward displacement of vehicle 0 (m) *)
+  "sc" -> 25.0
 };
 
 SimulateBando[OptionsPattern[]] := Module[
-  {n, L, T, dt, kappa, vmax, sc, perturb, nt, spacing, pos, vel, posHist,
-   velHist, times, params, sampleEvery, step, newState},
+  {n, L, T, dt, kappa, vmax, sc, nt, spacing, pos, vel, posHist, velHist,
+   times, params, sampleEvery, step, newState},
   n = OptionValue["nVehicles"];
   L = OptionValue["roadLength"];
   T = OptionValue["T"];
@@ -51,14 +49,13 @@ SimulateBando[OptionsPattern[]] := Module[
   kappa = OptionValue["kappa"];
   vmax = OptionValue["vmax"];
   sc = OptionValue["sc"];
-  perturb = OptionValue["perturbation"];
 
   nt = Floor[T/dt];
   spacing = L/n;
   pos = N @ Table[i spacing, {i, 0, n - 1}];
   vel = ConstantArray[N @ OptimalVelocity[spacing, vmax, sc], n];
 
-  pos[[1]] = Mod[pos[[1]] - perturb, L]; (* backward displacement of vehicle 0 *)
+  pos[[1]] = Mod[pos[[1]] - 5.0, L]; (* perturb one vehicle backward 5 m *)
 
   params = <|"kappa" -> kappa, "vmax" -> vmax, "sc" -> sc, "dt" -> dt|>;
 
@@ -127,45 +124,6 @@ PlotBando[res_Association] := Module[
 
 PlotBando[res_Association, path_String] := Module[{g = PlotBando[res]},
   Export[path, g, ImageResolution -> 150]; path];
-
-speedColour[v_] := Blend[
-  {RGBColor[0.8, 0.1, 0.1], RGBColor[1.0, 0.85, 0.2], RGBColor[0.15, 0.7, 0.2]},
-  Clip[v/15.0, {0, 1}]
-];
-
-bandoFrame[res_Association, k_Integer] := Module[
-  {n, L, pos, vel, angles, pts, t, meanV},
-  n = res["nVehicles"]; L = res["roadLength"];
-  pos = res["positions"][[k]]; vel = res["velocities"][[k]];
-  t = res["times"][[k]]; meanV = Mean[vel];
-  angles = 2 Pi pos/L;
-  pts = MapThread[
-    {speedColour[#2], Disk[{Cos[#1], Sin[#1]}, 0.06]} &,
-    {angles, vel}
-  ];
-  Graphics[
-    {
-      {GrayLevel[0.85], Thickness[0.02], Circle[{0, 0}, 1]},
-      {Black, EdgeForm[Darker[Gray]], pts},
-      Text[Style[Row[{"\[LeftAngleBracket]v\[RightAngleBracket] = ",
-          NumberForm[meanV, {4, 2}], " m/s"}], 11], {0, 0}]
-    },
-    PlotRange -> 1.2 {{-1, 1}, {-1, 1}},
-    Background -> GrayLevel[0.97], ImageSize -> 360,
-    PlotLabel -> Row[{"Bando OVM  \[Kappa] = ", res["kappa"],
-      "  t = ", NumberForm[N[t], {4, 1}], " s"}]
-  ]
-];
-
-Options[AnimateBando] = {"frameStep" -> 2, "displayDuration" -> 0.07};
-AnimateBando[res_Association, path_String, OptionsPattern[]] := Module[
-  {frames, step = OptionValue["frameStep"], nFrames = Length[res["times"]]},
-  frames = Table[bandoFrame[res, k], {k, 1, nFrames, step}];
-  Export[path, frames, "GIF",
-    "AnimationRepetitions" -> Infinity,
-    "DisplayDurations" -> OptionValue["displayDuration"]];
-  path
-];
 
 End[];
 EndPackage[];

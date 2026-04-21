@@ -58,6 +58,16 @@ Each model exports a PNG into `results/`:
 | Aberdeen full city v2 | `results/aberdeen_full.png` |
 | Aberdeen full city v2 animation | `results/aberdeen_full.gif` |
 
+### Core-model animations
+
+| Model | Animation |
+|-------|-----------|
+| IDM ring road | ![IDM](results/anim_idm.gif) |
+| Bando OVM | ![Bando](results/anim_bando.gif) |
+| LWR shockwave | ![LWR](results/anim_lwr.gif) |
+| Payne-Whitham | ![PW](results/anim_payne_whitham.gif) |
+| Nagel-Schreckenberg | ![NaSch](results/anim_nasch.gif) |
+
 ### Aberdeen city animation
 
 ![Aberdeen city multi-agent animation](results/aberdeen_city.gif)

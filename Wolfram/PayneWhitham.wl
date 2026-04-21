@@ -8,7 +8,6 @@ BeginPackage["PayneWhitham`"];
 EquilibriumSpeed::usage = "EquilibriumSpeed[rho, rhoMax, vMax] returns Greenshields equilibrium speed Ve(rho).";
 SimulatePW::usage = "SimulatePW[opts] runs the Payne-Whitham model on a merge-zone corridor.";
 PlotPW::usage = "PlotPW[res] renders density and velocity evolution plots.";
-AnimatePW::usage = "AnimatePW[res, path] exports an animated density/velocity profile GIF.";
 
 Begin["`Private`"];
 
@@ -95,41 +94,6 @@ PlotPW[res_Association] := Module[{rhoPlot, vPlot},
 
 PlotPW[res_Association, path_String] := Module[{g = PlotPW[res]},
   Export[path, g, ImageResolution -> 150]; path];
-
-pwFrame[res_Association, k_Integer] := Module[
-  {x, rho, v, rhoMax, vMax, L, t, rhoPlot, vPlot},
-  x = res["x"]; rho = res["density"][[k]]; v = res["velocity"][[k]];
-  rhoMax = res["rhoMax"]; vMax = res["vMax"];
-  L = Last[x]; t = res["t"][[k]];
-
-  rhoPlot = ListLinePlot[Transpose[{x, rho}],
-    Frame -> True, FrameLabel -> {"Position (km)", "Density (veh/km)"},
-    PlotRange -> {{0, L}, {0, rhoMax}}, PlotStyle -> Red,
-    Filling -> Bottom, FillingStyle -> Directive[Red, Opacity[0.25]],
-    PlotLabel -> Row[{"Density  t = ", NumberForm[N[t], {5, 4}], " h"}],
-    GridLines -> Automatic, GridLinesStyle -> LightGray,
-    ImageSize -> 450, AspectRatio -> 0.6
-  ];
-  vPlot = ListLinePlot[Transpose[{x, v}],
-    Frame -> True, FrameLabel -> {"Position (km)", "Velocity (km/h)"},
-    PlotRange -> {{0, L}, {0, vMax}}, PlotStyle -> Darker[Green],
-    Filling -> Bottom, FillingStyle -> Directive[Green, Opacity[0.25]],
-    PlotLabel -> "Velocity",
-    GridLines -> Automatic, GridLinesStyle -> LightGray,
-    ImageSize -> 450, AspectRatio -> 0.6
-  ];
-  GraphicsRow[{rhoPlot, vPlot}, ImageSize -> 900]
-];
-
-Options[AnimatePW] = {"frameStep" -> 1, "displayDuration" -> 0.08};
-AnimatePW[res_Association, path_String, OptionsPattern[]] := Module[
-  {frames, step = OptionValue["frameStep"], nFrames = Length[res["t"]]},
-  frames = Table[pwFrame[res, k], {k, 1, nFrames, step}];
-  Export[path, frames, "GIF",
-    "AnimationRepetitions" -> Infinity,
-    "DisplayDurations" -> OptionValue["displayDuration"]];
-  path
-];
 
 End[];
 EndPackage[];

@@ -13,7 +13,6 @@ BeginPackage["IDM`"];
 
 SimulateIDM::usage = "SimulateIDM[opts] runs the IDM on a ring road and returns an Association with keys times, positions, velocities, roadLength, nVehicles.";
 PlotIDM::usage = "PlotIDM[result] returns trajectory and speed-profile plots. PlotIDM[result, path] also exports to path.";
-AnimateIDM::usage = "AnimateIDM[result, path] exports a ring-road animation to an animated GIF at path.";
 
 Begin["`Private`"];
 
@@ -150,50 +149,6 @@ PlotIDM[res_Association] := Module[
 
 PlotIDM[res_Association, path_String] := Module[{g = PlotIDM[res]},
   Export[path, g, ImageResolution -> 150];
-  path
-];
-
-(* Ring-road animation. Each frame shows the circular road with vehicles
-   drawn as coloured disks at their current angular positions. *)
-
-speedColour[v_] := Blend[
-  {RGBColor[0.8, 0.1, 0.1], RGBColor[1.0, 0.85, 0.2], RGBColor[0.15, 0.7, 0.2]},
-  Clip[v/15.0, {0, 1}]
-];
-
-idmFrame[res_Association, k_Integer] := Module[
-  {n = res["nVehicles"], L = res["roadLength"], pos, vel, angles, pts, t},
-  pos = res["positions"][[k]];
-  vel = res["velocities"][[k]];
-  t = res["times"][[k]];
-  angles = 2 Pi pos/L;
-  pts = MapThread[
-    {speedColour[#2], Disk[{Cos[#1], Sin[#1]}, 0.05]} &,
-    {angles, vel}
-  ];
-  Graphics[
-    {
-      {GrayLevel[0.85], Thickness[0.02], Circle[{0, 0}, 1]},
-      {Black, EdgeForm[Darker[Gray]], pts}
-    },
-    PlotRange -> 1.2 {{-1, 1}, {-1, 1}},
-    Background -> GrayLevel[0.97],
-    ImageSize -> 360,
-    PlotLabel -> Row[{"IDM ring road  t = ",
-      NumberForm[N[t], {4, 1}], " s"}]
-  ]
-];
-
-Options[AnimateIDM] = {"frameStep" -> 2, "displayDuration" -> 0.07};
-
-AnimateIDM[res_Association, path_String, OptionsPattern[]] := Module[
-  {nFrames, step, frames},
-  nFrames = Length[res["times"]];
-  step = OptionValue["frameStep"];
-  frames = Table[idmFrame[res, k], {k, 1, nFrames, step}];
-  Export[path, frames, "GIF",
-    "AnimationRepetitions" -> Infinity,
-    "DisplayDurations" -> OptionValue["displayDuration"]];
   path
 ];
 
