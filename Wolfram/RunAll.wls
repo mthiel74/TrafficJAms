@@ -46,4 +46,16 @@ Get["NetworkAssignment.wl"];
 naRes = NetworkAssignment`SimulateAssignment[];
 NetworkAssignment`PlotAssignment[naRes, "results/network_assignment.png"];
 
+banner["Aberdeen Wardrop Network"];
+Get["AberdeenNetwork.wl"];
+abNetRes = AberdeenNetwork`SimulateAberdeenNetwork[];
+AberdeenNetwork`PlotAberdeenNetwork[abNetRes, "results/aberdeen_network.png"];
+
+banner["Aberdeen City Multi-Agent Simulation"];
+Get["AberdeenCityNetwork.wl"];
+abCityNet = AberdeenCityNetwork`LoadAberdeenNetwork[];
+abCitySim = AberdeenCityNetwork`SimulateAberdeenCity[abCityNet,
+   "nVehicles" -> 150, "nFrames" -> 120, "T" -> 300];
+AberdeenCityNetwork`PlotAberdeenCity[abCitySim, "results/aberdeen_city.png"];
+
 Print["\nAll models done. Outputs in ", Directory[] <> "/results/"];
