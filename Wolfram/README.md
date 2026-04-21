@@ -19,6 +19,7 @@ standalone package that mirrors one model:
 | `DynamicAssignment.wl`            | Time-varying demand, period-by-period UE |
 | `AberdeenNetwork.wl`              | 15-node Aberdeen Wardrop network         |
 | `AberdeenCityNetwork.wl`          | Multi-agent sim on real Aberdeen OSM     |
+| `AberdeenFullCity.wl`             | Full-city v2 sim (signals + roundabouts) |
 | `RunAll.wls`                      | Runs every model and exports PNGs        |
 
 ## Running
@@ -54,10 +55,21 @@ Each model exports a PNG into `results/`:
 | Aberdeen Wardrop network | `results/aberdeen_network.png` |
 | Aberdeen city multi-agent | `results/aberdeen_city.png` |
 | Aberdeen city animation | `results/aberdeen_city.gif` |
+| Aberdeen full city v2 | `results/aberdeen_full.png` |
+| Aberdeen full city v2 animation | `results/aberdeen_full.gif` |
 
 ### Aberdeen city animation
 
 ![Aberdeen city multi-agent animation](results/aberdeen_city.gif)
+
+### Aberdeen full city v2 animation
+
+600 vehicles on the full Aberdeen drivable road network with full IDM
+car-following, 151 signalised junctions, ~1000 roundabout-tagged edges,
+hierarchy-weighted noisy routing, staggered entry over 60 s, and
+probabilistic detours.
+
+![Aberdeen full city v2 animation](results/aberdeen_full.gif)
 
 ## Notes on the port
 

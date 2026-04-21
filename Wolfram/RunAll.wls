@@ -78,4 +78,12 @@ abCitySim = AberdeenCityNetwork`SimulateAberdeenCity[abCityNet,
    "nVehicles" -> 150, "nFrames" -> 120, "T" -> 300];
 AberdeenCityNetwork`PlotAberdeenCity[abCitySim, "results/aberdeen_city.png"];
 
+banner["Aberdeen Full City v2 (signals + roundabouts + IDM)"];
+Get["IntersectionControl.wl"];
+Get["AberdeenFullCity.wl"];
+abFullNet = AberdeenFullCity`LoadFullAberdeen[];
+abFullSim = AberdeenFullCity`SimulateFullAberdeen[abFullNet,
+   "nVehicles" -> 400, "nFrames" -> 80, "T" -> 240];
+AberdeenFullCity`PlotFullAberdeen[abFullSim, "results/aberdeen_full.png"];
+
 Print["\nAll models done. Outputs in ", Directory[] <> "/results/"];
