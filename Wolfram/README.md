@@ -28,6 +28,20 @@ Output images are written to `results/`. Each package also defines a
 `Simulate<Name>[]` function and a `Plot<Name>[result]` function so individual
 models can be explored interactively.
 
+## Results
+
+Each model exports a PNG into `results/`:
+
+| Model | Output |
+|-------|--------|
+| IDM circular road | `results/idm.png` |
+| Bando OVM | `results/bando.png` |
+| LWR / Godunov | `results/lwr.png` |
+| Payne-Whitham | `results/payne_whitham.png` |
+| Nagel-Schreckenberg | `results/nagel_schreckenberg.png` |
+| M/D/1 queueing | `results/queueing.png` |
+| Network assignment | `results/network_assignment.png` |
+
 ## Notes on the port
 
 * The Wolfram versions are intentionally faithful to the Python reference in
