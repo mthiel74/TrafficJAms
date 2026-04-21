@@ -61,6 +61,11 @@ Get["NetworkAssignment.wl"];
 naRes = NetworkAssignment`SimulateAssignment[];
 NetworkAssignment`PlotAssignment[naRes, "results/network_assignment.png"];
 
+banner["Dynamic Assignment"];
+Get["DynamicAssignment.wl"];
+daRes = DynamicAssignment`SimulateDynamicAssignment[];
+DynamicAssignment`PlotDynamicAssignment[daRes, "results/dynamic_assignment.png"];
+
 banner["Aberdeen Wardrop Network"];
 Get["AberdeenNetwork.wl"];
 abNetRes = AberdeenNetwork`SimulateAberdeenNetwork[];

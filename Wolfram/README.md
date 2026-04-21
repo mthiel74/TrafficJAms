@@ -16,6 +16,7 @@ standalone package that mirrors one model:
 | `SignalOptimisation.wl`           | Webster delay-minimising green splits    |
 | `IntersectionControl.wl`          | Signal controller + roundabout gap model |
 | `NetworkAssignment.wl`            | Beckmann / BPR Wardrop equilibrium       |
+| `DynamicAssignment.wl`            | Time-varying demand, period-by-period UE |
 | `AberdeenNetwork.wl`              | 15-node Aberdeen Wardrop network         |
 | `AberdeenCityNetwork.wl`          | Multi-agent sim on real Aberdeen OSM     |
 | `RunAll.wls`                      | Runs every model and exports PNGs        |
@@ -49,6 +50,7 @@ Each model exports a PNG into `results/`:
 | Signal optimisation | `results/signal_optimisation.png` |
 | Signal phase schedule (demo) | `results/signal_schedule.png` |
 | Network assignment | `results/network_assignment.png` |
+| Dynamic assignment | `results/dynamic_assignment.png` |
 | Aberdeen Wardrop network | `results/aberdeen_network.png` |
 | Aberdeen city multi-agent | `results/aberdeen_city.png` |
 | Aberdeen city animation | `results/aberdeen_city.gif` |
