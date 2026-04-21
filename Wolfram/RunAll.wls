@@ -51,6 +51,11 @@ Get["SignalOptimisation.wl"];
 soRes = SignalOptimisation`SimulateSignalOpt[];
 SignalOptimisation`PlotSignalOpt[soRes, "results/signal_optimisation.png"];
 
+banner["Intersection Control (signal schedule demo)"];
+Get["IntersectionControl.wl"];
+icRes = IntersectionControl`SimulateSignalDemo[];
+IntersectionControl`PlotSignalDemo[icRes, "results/signal_schedule.png"];
+
 banner["Network Assignment"];
 Get["NetworkAssignment.wl"];
 naRes = NetworkAssignment`SimulateAssignment[];
