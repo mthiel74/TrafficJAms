@@ -482,23 +482,32 @@ dynamics. It is written as"}], "Text"],
    " (typically 4) controls how sharply a driver eases off the \
 accelerator as they approach their desired speed."}], "Text"],
 
- Cell[TextData[{"Running 50 IDM vehicles on a 1\[ThinSpace]km \
-circular road, with a single-vehicle speed perturbation, \
-reproduces one of the most pedagogically useful results in all of \
-traffic science: the ",
+ Cell[TextData[{"Running the Treiber et al. (2000) phantom-jam \
+parameters \[LongDash] ",
+   mathI[RowBox[{v0Sym, "=30"}]], " m/s, ",
+   mathI[RowBox[{"T", "=1.6"}]], " s, ",
+   mathI[RowBox[{"a", "=0.73"}]], " m/s\[Superscript]2, ",
+   mathI[RowBox[{"b", "=1.67"}]], " m/s\[Superscript]2 \[LongDash] \
+on a 70-vehicle 2\[ThinSpace]km ring with a single-vehicle speed \
+perturbation reproduces one of the most pedagogically useful \
+results in all of traffic science: the ",
    StyleBox["phantom jam", FontSlant -> Italic],
    ". The perturbation is not absorbed; instead it amplifies \
 through the platoon into a persistent backward-propagating jam \
-that has no visible external cause. A road that was a fraction \
-away from instability collapses into a stop-and-go wave."}],
+that has no visible external cause. A road a fraction away from \
+instability collapses into a stop-and-go wave; by ",
+   mathI[RowBox[{"t", "=400"}]], " s individual speeds span \
+0.9\[Dash]20.6 m/s even though the mean is still ~12 m/s."}],
       "Text"],
 
  imgCell["anim_idm.gif",
-   "Figure 4. 50 IDM vehicles on a 1 km ring road. One vehicle is \
-seeded at half speed at t=0; the instability propagates backward \
-around the ring and crystallises into a persistent stop-and-go \
-wave. Each disk is a vehicle coloured by its instantaneous speed \
-(green = free flow, red = stopped). (MP4: \
+   "Figure 4. 70 IDM vehicles on a 2 km ring road with Treiber's \
+phantom-jam parameters (v0=30 m/s, T=1.6 s, a=0.73 m/s^2, \
+b=1.67 m/s^2). One vehicle is seeded at half speed at t=0; after a \
+few seconds the instability amplifies through the platoon into a \
+persistent stop-and-go wave that rotates backward around the ring. \
+By t=400 s speeds span 0.9 to 20.6 m/s -- the dense red cluster is \
+the jam, the green free-flow arc is downstream of it. (MP4: \
 Wolfram/results/anim_idm.mp4.)"],
 
  (* ---- Section 5: Bando OVM ---- *)
@@ -528,13 +537,14 @@ cleanest mathematical explanation for why phantom jams exist: they \
 are the attractor of a dynamical bifurcation."}], "Text"],
 
  imgCell["anim_bando.gif",
-   "Figure 5. Animated Bando OVM on an 800 m ring with 40 \
-vehicles, seeded by a 5 m position perturbation on one vehicle. \
-The ring starts in near-uniform flow; the perturbation rotates \
-around the ring, grows via the Hopf instability, and breaks the \
-symmetry into a persistent stop-and-go wave. The mean-speed \
-readout in the centre collapses from ~13 m/s to under 1 m/s as \
-the instability saturates. (MP4: Wolfram/results/anim_bando.mp4.)"],
+   "Figure 5. Animated Bando OVM on an 800 m ring with 18 \
+vehicles and kappa=0.4, chosen below the stability threshold \
+2 V_opt'(s*) ~ 0.61. Uniform flow at ~5.7 m/s is therefore \
+linearly unstable; the small position perturbation on vehicle 1 \
+grows via a Hopf bifurcation into a persistent stop-and-go wave \
+that rotates around the ring. By t=400 s individual speeds span \
+2.9 to 9.5 m/s (green fast, orange slow), a 3x spread. (MP4: \
+Wolfram/results/anim_bando.mp4.)"],
 
  (* ---- Section 6: NaSch ---- *)
 
