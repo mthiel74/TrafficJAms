@@ -25,27 +25,35 @@ speedCol[v_, vmax_] := Blend[
 (* --------- IDM ring --------- *)
 
 idmRingFrame[res_Association, k_Integer, vmax_] := Module[
-  {L = res["roadLength"], pos, vel, t, angles, disks},
+  {L = res["roadLength"], n = res["nVehicles"], pos, vel, t, angles, disks,
+   diskR},
   pos = res["positions"][[k]];
   vel = res["velocities"][[k]];
   t = res["times"][[k]];
   angles = 2 Pi pos/L;
+  diskR = Clip[0.9 Pi/n, {0.03, 0.1}];  (* scale radius so cars don't overlap *)
   disks = MapThread[
-    {speedCol[#2, vmax], EdgeForm[Darker[Gray]], Disk[{Cos[#1], Sin[#1]}, 0.05]} &,
+    {speedCol[#2, vmax], EdgeForm[Directive[Thin, GrayLevel[0.3]]],
+      Disk[{Cos[#1], Sin[#1]}, diskR]} &,
     {angles, vel}
   ];
   Graphics[
     {
-      {GrayLevel[0.82], Thickness[0.025], Circle[{0, 0}, 1]},
+      {GrayLevel[0.82], Thickness[0.03], Circle[{0, 0}, 1]},
       disks,
       Text[Style[Row[{"t = ", NumberForm[N[t], {4, 1}], " s"}], 12],
-        {0, -0.05}]
+        {0, 0.05}],
+      Text[Style[Row[{"\[LeftAngleBracket]v\[RightAngleBracket] = ",
+        NumberForm[N[Mean[vel]], {4, 2}], " m/s   spread [",
+        NumberForm[N[Min[vel]], {4, 1}], ", ",
+        NumberForm[N[Max[vel]], {4, 1}], "]"}], 10, Darker[Gray]],
+        {0, -0.12}]
     },
-    PlotRange -> 1.25 {{-1, 1}, {-1, 1}},
+    PlotRange -> 1.3 {{-1, 1}, {-1, 1}},
     AspectRatio -> 1,
     Background -> GrayLevel[0.97],
-    ImageSize -> 420,
-    PlotLabel -> Row[{"IDM ring road, ", res["nVehicles"], " vehicles"}]
+    ImageSize -> 480,
+    PlotLabel -> Row[{"IDM ring road, ", n, " vehicles"}]
   ]
 ];
 
@@ -69,30 +77,36 @@ AnimateIDMRing[res_Association, path_String, OptionsPattern[]] := Module[
 (* --------- Bando ring --------- *)
 
 bandoRingFrame[res_Association, k_Integer, vmax_] := Module[
-  {L = res["roadLength"], pos, vel, t, angles, disks, meanSpd},
+  {L = res["roadLength"], n = res["nVehicles"], pos, vel, t, angles, disks,
+   meanSpd, diskR},
   pos = res["positions"][[k]];
   vel = res["velocities"][[k]];
   t = res["times"][[k]];
   meanSpd = Mean[vel];
   angles = 2 Pi pos/L;
+  diskR = Clip[0.9 Pi/n, {0.04, 0.11}];
   disks = MapThread[
-    {speedCol[#2, vmax], EdgeForm[Darker[Gray]], Disk[{Cos[#1], Sin[#1]}, 0.055]} &,
+    {speedCol[#2, vmax], EdgeForm[Directive[Thin, GrayLevel[0.3]]],
+      Disk[{Cos[#1], Sin[#1]}, diskR]} &,
     {angles, vel}
   ];
   Graphics[
     {
-      {GrayLevel[0.82], Thickness[0.025], Circle[{0, 0}, 1]},
+      {GrayLevel[0.82], Thickness[0.03], Circle[{0, 0}, 1]},
       disks,
       Text[Style[Row[{"\[LeftAngleBracket]v\[RightAngleBracket] = ",
-        NumberForm[N[meanSpd], {4, 2}], " m/s"}], 12], {0, 0.05}],
+        NumberForm[N[meanSpd], {4, 2}], " m/s   spread [",
+        NumberForm[N[Min[vel]], {4, 1}], ", ",
+        NumberForm[N[Max[vel]], {4, 1}], "]"}], 11], {0, 0.06}],
       Text[Style[Row[{"t = ", NumberForm[N[t], {4, 1}], " s"}], 10,
-        Gray], {0, -0.1}]
+        Gray], {0, -0.06}]
     },
-    PlotRange -> 1.25 {{-1, 1}, {-1, 1}},
+    PlotRange -> 1.3 {{-1, 1}, {-1, 1}},
     AspectRatio -> 1,
     Background -> GrayLevel[0.97],
-    ImageSize -> 420,
-    PlotLabel -> Row[{"Bando OVM ring, \[Kappa] = ", res["kappa"]}]
+    ImageSize -> 480,
+    PlotLabel -> Row[{"Bando OVM ring, \[Kappa] = ", res["kappa"],
+                       ", ", n, " vehicles"}]
   ]
 ];
 

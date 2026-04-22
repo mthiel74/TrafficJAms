@@ -497,7 +497,7 @@ parameters \[LongDash] ",
    mathI[RowBox[{"T", "=1.6"}]], " s, ",
    mathI[RowBox[{"a", "=0.73"}]], " m/s\[Superscript]2, ",
    mathI[RowBox[{"b", "=1.67"}]], " m/s\[Superscript]2 \[LongDash] \
-on a 70-vehicle 2\[ThinSpace]km ring with a single-vehicle speed \
+on a 30-vehicle 1\[ThinSpace]km ring with a single-vehicle speed \
 perturbation reproduces one of the most pedagogically useful \
 results in all of traffic science: the ",
    StyleBox["phantom jam", FontSlant -> Italic],
@@ -505,19 +505,21 @@ results in all of traffic science: the ",
 through the platoon into a persistent backward-propagating jam \
 that has no visible external cause. A road a fraction away from \
 instability collapses into a stop-and-go wave; by ",
-   mathI[RowBox[{"t", "=400"}]], " s individual speeds span \
-0.9\[Dash]20.6 m/s even though the mean is still ~12 m/s."}],
+   mathI[RowBox[{"t", "=500"}]], " s individual speeds span \
+6\[Dash]21 m/s, and the ring visibly has a dense orange cluster \
+(the jam) and a sparse green arc (free flow downstream)."}],
       "Text"],
 
  imgCell["anim_idm.gif",
-   "Figure 4. 70 IDM vehicles on a 2 km ring road with Treiber's \
+   "Figure 4. 30 IDM vehicles on a 1 km ring with Treiber's \
 phantom-jam parameters (v0=30 m/s, T=1.6 s, a=0.73 m/s^2, \
-b=1.67 m/s^2). One vehicle is seeded at half speed at t=0; after a \
-few seconds the instability amplifies through the platoon into a \
+b=1.67 m/s^2). One vehicle is seeded at half speed at t=0; within \
+seconds the instability amplifies through the platoon into a \
 persistent stop-and-go wave that rotates backward around the ring. \
-By t=400 s speeds span 0.9 to 20.6 m/s -- the dense red cluster is \
-the jam, the green free-flow arc is downstream of it. (MP4: \
-Wolfram/results/anim_idm.mp4.)"],
+By t=500 s the ring shows a clear dense orange cluster (the jam) \
+and a sparse green arc (free flow downstream); individual speeds \
+span 6 to 21 m/s and the gaps between cars vary by a factor of \
+3x between the two regions. (MP4: Wolfram/results/anim_idm.mp4.)"],
 
  (* ---- Section 5: Bando OVM ---- *)
 
