@@ -8,6 +8,7 @@ BeginPackage["NagelSchreckenberg2Lane`"];
 
 SimulateNaSch2::usage = "SimulateNaSch2[opts] runs the 2-lane NaSch CA.";
 PlotNaSch2::usage = "PlotNaSch2[res] renders the two lane space-time diagrams and the lane-change time series.";
+AnimateNaSch2::usage = "AnimateNaSch2[res, path] exports an animated GIF showing both lanes over time.";
 
 Begin["`Private`"];
 
@@ -178,6 +179,68 @@ PlotNaSch2[res_Association] := Module[
 
 PlotNaSch2[res_Association, path_String] := Module[{g = PlotNaSch2[res]},
   Export[path, g, ImageResolution -> 150]; path];
+
+(* -------- Animation -------- *)
+
+speedColour[v_, vMax_] := If[v < 0, White,
+  Blend[{RGBColor[0.85, 0.1, 0.1], RGBColor[1.0, 0.85, 0.2],
+         RGBColor[0.1, 0.7, 0.2]}, Clip[v/vMax, {0, 1}]]];
+
+nasch2Frame[res_Association, t_Integer] := Module[
+  {L = res["roadLength"], vMax = res["vMax"], lanes, positions, speeds, i, st},
+  st = res["spacetime"][[t]];
+  Graphics[
+    {
+      (* road backgrounds *)
+      {GrayLevel[0.85], Rectangle[{0, 1.2}, {L, 1.9}]},  (* lane 1 *)
+      {GrayLevel[0.85], Rectangle[{0, 0.2}, {L, 0.9}]},  (* lane 2 *)
+      {GrayLevel[0.4], Thickness[0.002], Line[{{0, 1.05}, {L, 1.05}}]},
+
+      (* lane 1 cars *)
+      Table[
+        If[st[[1, i]] >= 0,
+          {speedColour[st[[1, i]], vMax], EdgeForm[Darker[Gray]],
+            Disk[{i - 1, 1.55}, 2.5]},
+          Nothing
+        ],
+        {i, L}
+      ],
+      (* lane 2 cars *)
+      Table[
+        If[st[[2, i]] >= 0,
+          {speedColour[st[[2, i]], vMax], EdgeForm[Darker[Gray]],
+            Disk[{i - 1, 0.55}, 2.5]},
+          Nothing
+        ],
+        {i, L}
+      ],
+
+      (* labels *)
+      Text[Style["Lane 1", 10, Darker[Gray]], {-15, 1.55}, {1, 0}],
+      Text[Style["Lane 2", 10, Darker[Gray]], {-15, 0.55}, {1, 0}]
+    },
+    PlotRange -> {{-20, L + 5}, {0, 2.3}},
+    AspectRatio -> 0.12,
+    Background -> GrayLevel[0.97],
+    ImageSize -> 700,
+    PlotLabel -> Row[{"2-lane NaSch  t = ", t, "  (lane changes so far = ",
+                      Total[Take[res["laneChanges"], t]], ")"}]
+  ]
+];
+
+Options[AnimateNaSch2] = {"frameRate" -> 12, "stride" -> 2, "maxSteps" -> 120};
+
+AnimateNaSch2[res_Association, path_String, OptionsPattern[]] := Module[
+  {stride, fr, maxSteps, idx, images},
+  stride = OptionValue["stride"];
+  fr = OptionValue["frameRate"];
+  maxSteps = Min[OptionValue["maxSteps"], res["T"]];
+  idx = Range[1, maxSteps, stride];
+  images = nasch2Frame[res, #] & /@ idx;
+  Export[path, images,
+    "DisplayDurations" -> ConstantArray[1.0/fr, Length[images]]];
+  path
+];
 
 End[];
 EndPackage[];

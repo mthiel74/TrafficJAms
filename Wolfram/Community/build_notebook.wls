@@ -8,7 +8,7 @@ hereDir = DirectoryName[If[$ScriptCommandLine =!= {}, $InputFileName,
                            NotebookFileName[]]];
 imgDir  = FileNameJoin[{hereDir, "..", "results"}];
 
-imgWidth = 680;
+imgWidth = 520;
 
 (* For PNGs: embed the image directly. For GIFs: embed only the first
    frame so the notebook/PDF don't explode into one image per frame.
@@ -27,7 +27,7 @@ loadImg[name_] := With[
 imgCell[name_, caption_String : ""] := Cell[
   BoxData[ToBoxes[
     If[caption === "",
-      loadImg[name],
+      Pane[loadImg[name], imgWidth, Alignment -> Center],
       Column[{
         loadImg[name],
         Pane[Style[caption, Italic, FontSize -> 10,
@@ -36,7 +36,8 @@ imgCell[name_, caption_String : ""] := Cell[
       }, Alignment -> Center, Spacings -> 0.6]
   ]]],
   "Output", ShowCellLabel -> False,
-  CellMargins -> {{0, 0}, {10, 14}}
+  TextAlignment -> Center,
+  CellMargins -> {{20, 20}, {10, 14}}
 ];
 
 (* ---------- math typesetting helpers ---------- *)
@@ -115,12 +116,14 @@ godunovEq = RowBox[{"Q", SubsuperscriptBox["",
       ",", " ", "Q", "(", rhoCrit, ")", ")"}]}]}];
 
 (* Payne-Whitham second-order momentum equation *)
+pwLHS = RowBox[{
+  FractionBox[RowBox[{"\[PartialD]", "v"}], RowBox[{"\[PartialD]", "t"}]],
+  "+", "v",
+  FractionBox[RowBox[{"\[PartialD]", "v"}], RowBox[{"\[PartialD]", "x"}]]
+}];
+
 payneEq = RowBox[{
-  RowBox[{
-    FractionBox[RowBox[{"\[PartialD]", "v"}], RowBox[{"\[PartialD]", "t"}]],
-    "+", "v",
-    FractionBox[RowBox[{"\[PartialD]", "v"}], RowBox[{"\[PartialD]", "x"}]]},
-  "="],
+  pwLHS, "=",
   FractionBox[RowBox[{VeSym, "-", "v"}], tauSym],
   "-",
   FractionBox[SuperscriptBox[c0Sym, "2"], "\[Rho]"],
@@ -383,19 +386,14 @@ backward-travelling shock (upstream boundary of the jam) and a \
 downstream rarefaction fan (vehicles leaving the jam into free \
 road)."}], "Text"],
 
- imgCell["lwr.png",
-   "Figure 2. LWR density evolution on a 10 km corridor with an \
-initial density block. Left: space-time heatmap; the bright \
-diagonal streak is the backward-propagating shock. Right: \
-snapshots at five increasing times showing the jam block dissolve \
-into a backward shock (left edge) and a forward rarefaction (right \
-edge)."],
-
  imgCell["anim_lwr.gif",
-   "Figure 3. Animated version of the same run: the hot-coloured \
-block disperses, with the leftward shockfront clearly visible. The \
-backward propagation speed equals the slope of the shock line on \
-the space-time diagram."],
+   "Figure 2. LWR density evolution on a 10 km corridor with an \
+initial high-density block. The hot-coloured jam block disperses \
+into a backward-propagating shockfront (visible travelling \
+leftwards) and a downstream rarefaction fan; the backward \
+propagation speed equals the slope of the shock line in the \
+underlying space-time diagram. (The MP4 version is at \
+Wolfram/results/anim_lwr.mp4.)"],
 
  (* ---- Section 3: Payne-Whitham ---- *)
 
@@ -425,15 +423,11 @@ moderate-density corridor \[LongDash] the kind of configuration \
 you get at an on-ramp merge \[LongDash] and watch the oscillatory \
 structure develop."}], "Text"],
 
- imgCell["payne_whitham.png",
-   "Figure 4. Payne-Whitham density (left) and velocity (right) \
-evolution near a merge zone. Unlike LWR the velocity can drop \
-below equilibrium transiently, producing stop-and-go oscillations \
-rather than a clean shock."],
-
  imgCell["anim_payne_whitham.gif",
-   "Figure 5. Animated Payne-Whitham run showing the merge-zone \
-density block spread and oscillate rather than simply disperse."],
+   "Figure 3. Animated Payne-Whitham run near a merge zone. \
+Unlike LWR the velocity field can drop below equilibrium \
+transiently, producing stop-and-go oscillations rather than a \
+clean shock. (MP4: Wolfram/results/anim_payne_whitham.mp4.)"],
 
  (* ---- Section 4: IDM ---- *)
 
@@ -483,18 +477,13 @@ that has no visible external cause. A road that was a fraction \
 away from instability collapses into a stop-and-go wave."}],
       "Text"],
 
- imgCell["idm.png",
-   "Figure 6. 50 IDM vehicles on a 1 km ring road. Left: space-time \
-trajectories; each diagonal line is one vehicle's position over \
-time, coloured by its speed. The red (stopped) diagonal bands are \
-the phantom jam, rotating backward relative to the vehicle motion. \
-Right: speed time series of four sample vehicles showing the \
-oscillation passing through them in turn."],
-
  imgCell["anim_idm.gif",
-   "Figure 7. The same ring road animated. One vehicle started at \
-half speed; the instability propagates around the ring and \
-crystallises into a persistent stop-and-go wave."],
+   "Figure 4. 50 IDM vehicles on a 1 km ring road. One vehicle is \
+seeded at half speed at t=0; the instability propagates backward \
+around the ring and crystallises into a persistent stop-and-go \
+wave. Each disk is a vehicle coloured by its instantaneous speed \
+(green = free flow, red = stopped). (MP4: \
+Wolfram/results/anim_idm.mp4.)"],
 
  (* ---- Section 5: Bando OVM ---- *)
 
@@ -522,17 +511,14 @@ and the system collapses into stop-and-go waves. This is the \
 cleanest mathematical explanation for why phantom jams exist: they \
 are the attractor of a dynamical bifurcation."}], "Text"],
 
- imgCell["bando.png",
-   "Figure 8. Bando OVM on an 800 m ring road with 40 vehicles, \
-seeded by a 5 m position perturbation on one vehicle. Left: \
-space-time trajectories. Right: mean speed and its standard \
-deviation over time. Mean speed crashes from ~13 m/s at t=0 to \
-under 1 m/s as the instability saturates."],
-
  imgCell["anim_bando.gif",
-   "Figure 9. Animated Bando OVM. The ring starts in near-uniform \
-flow; a small perturbation rotates around the ring, grows, and \
-breaks the symmetry into a persistent stop-and-go wave."],
+   "Figure 5. Animated Bando OVM on an 800 m ring with 40 \
+vehicles, seeded by a 5 m position perturbation on one vehicle. \
+The ring starts in near-uniform flow; the perturbation rotates \
+around the ring, grows via the Hopf instability, and breaks the \
+symmetry into a persistent stop-and-go wave. The mean-speed \
+readout in the centre collapses from ~13 m/s to under 1 m/s as \
+the instability saturates. (MP4: Wolfram/results/anim_bando.mp4.)"],
 
  (* ---- Section 6: NaSch ---- *)
 
@@ -559,17 +545,13 @@ it, the space-time diagram spontaneously generates \
 backward-propagating \"wave\" bands, matching the LWR and IDM \
 results from a completely different starting point."}], "Text"],
 
- imgCell["nagel_schreckenberg.png",
-   "Figure 10. Space-time diagram of 100 NaSch vehicles on a \
-500-cell periodic lattice over 300 steps, with randomisation \
-probability p=0.3 and vMax=5 cells/step. The diagonal dark bands \
-are jam waves moving upstream (leftward) relative to the vehicles, \
-which move rightward."],
-
  imgCell["anim_nasch.gif",
-   "Figure 11. Animated highway view of the NaSch run. Top panel: \
-current positions. Bottom panel: the space-time diagram growing \
-line by line."],
+   "Figure 6. 100 NaSch vehicles on a 500-cell periodic lattice \
+with randomisation probability p=0.3 and vMax=5 cells/step. Top \
+panel: current positions, coloured by speed. Bottom panel: the \
+space-time diagram grows line by line, and backward-propagating \
+jam waves appear as diagonal dark bands. (MP4: \
+Wolfram/results/anim_nasch.mp4.)"],
 
  Cell[TextData[{"Extending to two lanes with a symmetric \
 lane-change rule (incentive: would have to brake in current lane; \
@@ -577,11 +559,18 @@ safety: sufficient gap ahead and behind in the target lane; \
 target cell free) recovers the classic multi-lane \
 redistribution."}], "Text"],
 
+ imgCell["anim_nasch_2lane.gif",
+   "Figure 7. Two-lane NaSch with 150 vehicles (75 per lane \
+initially). The running counter in the title shows cumulative \
+lane-change events; each occurs when a vehicle would otherwise \
+have to brake but the other lane satisfies the gap-acceptance \
+criteria. (MP4: Wolfram/results/anim_nasch_2lane.mp4.)"],
+
  imgCell["nasch_2lane.png",
-   "Figure 12. Two-lane NaSch with 150 vehicles (75 per lane \
-initially). Left two panels: per-lane space-time diagrams. Right: \
-number of lane changes per step. Peaks in lane-change activity \
-coincide with density imbalances between the two lanes."],
+   "Figure 8. Static space-time view of the same 2-lane run. Left \
+two panels: per-lane space-time diagrams. Right: number of lane \
+changes per step. Peaks in lane-change activity coincide with \
+density imbalances between the two lanes."],
 
  (* ---- Section 7: queues ---- *)
 
@@ -617,7 +606,7 @@ signals but is accurate enough for first-pass planning)."}],
       "Text"],
 
  imgCell["queueing.png",
-   "Figure 13. M/D/1 queueing on a four-intersection corridor. \
+   "Figure 9. M/D/1 queueing on a four-intersection corridor. \
 Top: per-intersection queue length (left) and waiting time (right) \
 as a function of utilisation; both blow up as rho -> 1. Bottom: \
 total queue and total delay for a 4-intersection tandem. The red \
@@ -648,7 +637,7 @@ intersections to the central busy one and cuts total delay by \
 ~8.4 %."}], "Text"],
 
  imgCell["signal_optimisation.png",
-   "Figure 14. Webster-style green-time optimisation. Left: \
+   "Figure 10. Webster-style green-time optimisation. Left: \
 uniform (50 s each) versus optimised green phase allocation \
 across the five intersections. Middle: total delay drops from \
 8.44 to 7.73 veh s (8.4% reduction). Right: sensitivity at the \
@@ -656,7 +645,7 @@ busiest intersection showing the U-shape that gives rise to the \
 optimum."],
 
  imgCell["signal_schedule.png",
-   "Figure 15. Gantt chart of a 90 s cycle / 4 s amber / 4-approach \
+   "Figure 11. Gantt chart of a 90 s cycle / 4 s amber / 4-approach \
 round-robin schedule. Each approach gets 18.5 s of green per cycle, \
 separated by amber intergreens. The controller is the building \
 block for signal control in the Aberdeen multi-agent simulation \
@@ -717,14 +706,14 @@ of 3.0\[Times] and 2.4\[Times] capacity respectively, matching \
 the real-world experience of commuters."}], "Text"],
 
  imgCell["network_assignment.png",
-   "Figure 16. Wardrop-equilibrium flow on a toy 8-node Aberdeen-\
+   "Figure 12. Wardrop-equilibrium flow on a toy 8-node Aberdeen-\
 inspired network. Left: network flow map; edge thickness and \
 colour encode flow. Right: path-flow distribution; all used paths \
 (1, 2, 4) end up with approximately equal costs ~19.6 while the \
 unused path 3 has higher cost - exactly Wardrop's principle."],
 
  imgCell["aberdeen_network.png",
-   "Figure 17. Equilibrium on the realistic 15-node Aberdeen \
+   "Figure 13. Equilibrium on the realistic 15-node Aberdeen \
 network. Left: saturation map of the 23 roads; the thickest red \
 edge is Union Street. Right: top ten most-congested links, with \
 Union Street at 3.0x capacity followed by Anderson Drive (south) \
@@ -754,7 +743,7 @@ asymmetrically on the way out of the peak because residual \
 congestion persists."}], "Text"],
 
  imgCell["dynamic_assignment.png",
-   "Figure 18. 12-period dynamic assignment (period length 5 min) \
+   "Figure 14. 12-period dynamic assignment (period length 5 min) \
 on the toy Aberdeen network. Top-left: Gaussian-shaped demand \
 profile peaking mid-morning. Top-right: path-flow evolution. \
 Bottom-left: flow on four key links. Bottom-right: link-cost \
@@ -817,18 +806,20 @@ ring, heavy flows along the A90 down the east coast and into the \
 city, and congestion at the expected pinch points."}], "Text"],
 
  imgCell["aberdeen_full.gif",
-   "Figure 19. Animated full-city simulation (600 vehicles, \
-12 fps, 36 frames). Signal-controlled junctions impose the expected \
-wave-structure on the arterial roads. The AWPR ring is clearly \
-visible on the west/north perimeter and carries the lion's share \
-of through-flow, exactly as intended when it opened in 2018."],
+   "Figure 15. Animated full-city simulation (600 vehicles, \
+12 fps, 36 frames). Signal-controlled junctions impose the \
+expected wave-structure on the arterial roads. The AWPR ring is \
+clearly visible on the west/north perimeter and carries the \
+lion's share of through-flow, exactly as intended when it opened \
+in 2018. (MP4: Wolfram/results/aberdeen_full.mp4.)"],
 
  imgCell["aberdeen_city.gif",
-   "Figure 20. Zoomed-in view: 150 vehicles on the 800 m radius \
+   "Figure 16. Zoomed-in view: 150 vehicles on the 800 m radius \
 city-centre extract (1397 drivable nodes). Union Street cuts \
 diagonally through the middle; Marischal College is at the \
 centre. At this scale individual vehicle interactions and queue \
-build-up at intersections are very visible."],
+build-up at intersections are very visible. (MP4: \
+Wolfram/results/aberdeen_city.mp4.)"],
 
  (* ---- Section 12: implementation notes ---- *)
 
