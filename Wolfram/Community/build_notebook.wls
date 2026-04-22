@@ -10,15 +10,31 @@ imgDir  = FileNameJoin[{hereDir, "..", "results"}];
 
 imgWidth = 520;
 
-(* For PNGs: embed the image directly. For GIFs: embed only the first
-   frame so the notebook/PDF don't explode into one image per frame.
-   The animated GIF itself is still available on disk / in the repo. *)
+(* For PNGs: embed the image directly. For GIFs: embed frames inside a
+   ListAnimate so the notebook plays the animation with play / pause /
+   scrubber controls. Frames are subsampled and resized to keep the .nb
+   file under the 25 MB Community-post soft limit; the original
+   full-resolution MP4 and GIF remain in Wolfram/results/. *)
+maxFrames = 30;
+animWidth = 420;
+
 loadImg[name_] := With[
   {p = FileNameJoin[{imgDir, name}]},
   If[!FileExistsQ[p],
     Style["[missing image: " <> name <> "]", Red],
     If[StringEndsQ[ToLowerCase[name], ".gif"],
-      Image[First[Import[p, {"GIF", "ImageList"}]], ImageSize -> imgWidth],
+      With[{allFrames = Import[p, {"GIF", "ImageList"}]},
+        With[{stride = Max[1, Ceiling[Length[allFrames]/maxFrames]]},
+          With[{frames = allFrames[[1 ;; -1 ;; stride]]},
+            ListAnimate[
+              ImageResize[#, {animWidth}] & /@ frames,
+              AnimationRate -> 10,
+              AnimationRunning -> True,
+              AnimationRepetitions -> Infinity
+            ]
+          ]
+        ]
+      ],
       Image[Import[p], ImageSize -> imgWidth]
     ]
   ]
