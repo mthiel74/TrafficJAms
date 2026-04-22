@@ -491,25 +491,25 @@ dynamics. It is written as"}], "Text"],
    " (typically 4) controls how sharply a driver eases off the \
 accelerator as they approach their desired speed."}], "Text"],
 
- Cell[TextData[{"Running the Treiber et al. (2000) phantom-jam \
-parameters \[LongDash] ",
-   mathI[RowBox[{v0Sym, "=30"}]], " m/s, ",
-   mathI[RowBox[{"T", "=1.6"}]], " s, ",
-   mathI[RowBox[{"a", "=0.73"}]], " m/",
-   mathI[SuperscriptBox["s", "2"]], ", ",
-   mathI[RowBox[{"b", "=1.67"}]], " m/",
-   mathI[SuperscriptBox["s", "2"]], " \[LongDash] \
-on a 30-vehicle 1\[ThinSpace]km ring with a single-vehicle speed \
-perturbation reproduces one of the most pedagogically useful \
-results in all of traffic science: the ",
+ Cell[TextData[{"Running a strongly unstable configuration \
+\[LongDash] 25 vehicles on a 1\[ThinSpace]km ring (40 m mean gap), \
+desired speed ",
+   mathI[RowBox[{v0Sym, "=30"}]], " m/s, time headway ",
+   mathI[RowBox[{"T", "=2.5"}]], " s (so each driver wants ~75 m of \
+gap), sluggish acceleration ",
+   mathI[RowBox[{"a", "=0.3"}]], " m/",
+   mathI[SuperscriptBox["s", "2"]], ", and firm braking ",
+   mathI[RowBox[{"b", "=2.0"}]], " m/",
+   mathI[SuperscriptBox["s", "2"]], " \[LongDash] reproduces one of \
+the most pedagogically useful results in all of traffic science: \
+the ",
    StyleBox["phantom jam", FontSlant -> Italic],
-   ". The perturbation is not absorbed; instead it amplifies \
-through the platoon into a persistent backward-propagating jam \
-that has no visible external cause. The animation shows this both \
-on the ring (dense orange jam cluster, sparse green free-flow arc) \
-and in the accumulating space-time diagram below it, where the \
-backward-travelling jam wave is the obvious diagonal band of \
-orange/red."}],
+   ". A single-vehicle speed perturbation is not absorbed; instead \
+it amplifies through the platoon into a persistent \
+backward-propagating jam. The animation shows this both on the \
+ring (deep-red cluster of near-stopped cars, sparse green free-flow \
+arc) and in the accumulating space-time diagram below it, where \
+the jam waves are the diagonal red/orange bands."}],
       "Text"],
 
  Cell[TextData[{
@@ -525,15 +525,17 @@ simulation: ",
       "Text"],
 
  imgCell["anim_idm.gif",
-   "Figure 4. 30 IDM vehicles on a 1 km ring with Treiber's \
-phantom-jam parameters (v0=30 m/s, T=1.6 s, a=0.73 m/s^2, \
-b=1.67 m/s^2). Top panel: ring snapshot; cars are coloured by \
-speed and the dense orange cluster on one side of the ring is \
-the phantom jam. Bottom panel: accumulating space-time trajectory \
-diagram (time along x, position along y with wrap-around at \
-1000 m). The backward-travelling jam wave is the diagonal \
-orange/red band \[Dash] the cars move forward (slope up-right) \
-but the jam drifts backward relative to them. (MP4: \
+   "Figure 4. 25 IDM vehicles on a 1 km ring with an extreme \
+phantom-jam configuration (v0=30 m/s, T=2.5 s, a=0.3 m/s^2, \
+b=2.0 m/s^2). At t=0 the cars are visibly spaced out (40 m mean \
+gap) at free-flow speed. A single-vehicle speed perturbation \
+amplifies; by t=400 s the ring has a deep-red cluster of \
+near-stopped cars (slowest ~0.8 m/s) next to a green free-flow \
+arc (fastest ~17 m/s). Bottom panel: accumulating space-time \
+trajectory diagram (time along x, position along y with \
+wrap-around at 1000 m). The backward-travelling jam wave is the \
+diagonal red band - cars move forward (slope up-right) but the \
+jam drifts backward relative to them. (MP4: \
 Wolfram/results/anim_idm.mp4.)"],
 
  (* ---- Section 5: Bando OVM ---- *)
