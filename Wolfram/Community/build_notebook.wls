@@ -42,14 +42,20 @@ outputCell[expr_] := Cell[BoxData[ToBoxes[expr]],
 
 (* Per-animation frame-cap and playback-rate overrides *)
 $animFramesOverride = <|
-  "anim_bando.gif" -> 80,
-  "anim_nasch.gif" -> 40,
-  "aberdeen_full.gif" -> 30,
-  "aberdeen_city.gif" -> 30
+  "anim_bando.gif" -> 45,
+  "anim_nasch.gif" -> 30,
+  "aberdeen_full.gif" -> 22,
+  "aberdeen_city.gif" -> 22
 |>;
 $animRateOverride = <|
   "anim_nasch.gif" -> 2,
   "anim_nasch_2lane.gif" -> 3
+|>;
+(* Per-animation display width in pixels. Smaller = smaller .nb file.
+   Aberdeen maps stay a bit wider because of road-network detail. *)
+$animWidthOverride = <|
+  "aberdeen_city.gif" -> 380,
+  "aberdeen_full.gif" -> 380
 |>;
 
 (* Returns an AnimatedImage constructed from the subsampled GIF
@@ -61,11 +67,12 @@ loadAnim[name_] := With[
   If[!FileExistsQ[p],
     Style["[missing " <> name <> "]", Red],
     With[{all = Import[p, {"GIF", "ImageList"}],
-          cap = Lookup[$animFramesOverride, name, 30],
-          rate = Lookup[$animRateOverride, name, 4]},
+          cap = Lookup[$animFramesOverride, name, 25],
+          rate = Lookup[$animRateOverride, name, 4],
+          w = Lookup[$animWidthOverride, name, 340]},
       With[{stride = Max[1, Ceiling[Length[all]/cap]]},
         AnimatedImage[
-          ImageResize[#, {420}] & /@ all[[1 ;; -1 ;; stride]],
+          ImageResize[#, {w}] & /@ all[[1 ;; -1 ;; stride]],
           FrameRate -> rate,
           AnimationRunning -> True,
           AnimationRepetitions -> Infinity]]]]];
