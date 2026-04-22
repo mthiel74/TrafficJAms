@@ -186,57 +186,72 @@ speedColour[v_, vMax_] := If[v < 0, White,
   Blend[{RGBColor[0.85, 0.1, 0.1], RGBColor[1.0, 0.85, 0.2],
          RGBColor[0.1, 0.7, 0.2]}, Clip[v/vMax, {0, 1}]]];
 
-nasch2Frame[res_Association, t_Integer] := Module[
-  {L = res["roadLength"], vMax = res["vMax"], lanes, positions, speeds, i, st},
+(* Render a 2-lane NaSch frame. We restrict to a viewing window (default
+   first 200 cells) so each cell is wide enough to see; cars drawn as
+   cell-sized rectangles that tile the road cleanly. *)
+Options[nasch2Frame] = {"viewWindow" -> 200};
+
+nasch2Frame[res_Association, t_Integer, OptionsPattern[]] := Module[
+  {L = res["roadLength"], vMax = res["vMax"], win, st, yL1 = 4.0, yL2 = 0.5,
+   laneH = 3.0, i, cellW = 1.0},
+  win = Min[OptionValue["viewWindow"], L];
   st = res["spacetime"][[t]];
   Graphics[
     {
       (* road backgrounds *)
-      {GrayLevel[0.85], Rectangle[{0, 1.2}, {L, 1.9}]},  (* lane 1 *)
-      {GrayLevel[0.85], Rectangle[{0, 0.2}, {L, 0.9}]},  (* lane 2 *)
-      {GrayLevel[0.4], Thickness[0.002], Line[{{0, 1.05}, {L, 1.05}}]},
+      {GrayLevel[0.82], Rectangle[{0, yL1}, {win, yL1 + laneH}]},
+      {GrayLevel[0.82], Rectangle[{0, yL2}, {win, yL2 + laneH}]},
+      (* dashed lane separator *)
+      {GrayLevel[0.4], Dashing[{0.01, 0.01}], Thickness[0.001],
+       Line[{{0, yL1}, {win, yL1}}]},
 
-      (* lane 1 cars *)
+      (* lane 1 cars -- a filled rectangle per occupied cell *)
       Table[
         If[st[[1, i]] >= 0,
-          {speedColour[st[[1, i]], vMax], EdgeForm[Darker[Gray]],
-            Disk[{i - 1, 1.55}, 2.5]},
+          {speedColour[st[[1, i]], vMax], EdgeForm[Directive[Thin, GrayLevel[0.3]]],
+            Rectangle[{i - 1 + 0.05, yL1 + 0.1},
+                      {i - 1 + cellW - 0.05, yL1 + laneH - 0.1}]},
           Nothing
         ],
-        {i, L}
+        {i, win}
       ],
       (* lane 2 cars *)
       Table[
         If[st[[2, i]] >= 0,
-          {speedColour[st[[2, i]], vMax], EdgeForm[Darker[Gray]],
-            Disk[{i - 1, 0.55}, 2.5]},
+          {speedColour[st[[2, i]], vMax], EdgeForm[Directive[Thin, GrayLevel[0.3]]],
+            Rectangle[{i - 1 + 0.05, yL2 + 0.1},
+                      {i - 1 + cellW - 0.05, yL2 + laneH - 0.1}]},
           Nothing
         ],
-        {i, L}
+        {i, win}
       ],
 
-      (* labels *)
-      Text[Style["Lane 1", 10, Darker[Gray]], {-15, 1.55}, {1, 0}],
-      Text[Style["Lane 2", 10, Darker[Gray]], {-15, 0.55}, {1, 0}]
+      (* lane labels *)
+      Text[Style["Lane 1", 11, Darker[Gray]], {-3, yL1 + laneH/2}, {1, 0}],
+      Text[Style["Lane 2", 11, Darker[Gray]], {-3, yL2 + laneH/2}, {1, 0}]
     },
-    PlotRange -> {{-20, L + 5}, {0, 2.3}},
-    AspectRatio -> 0.12,
+    PlotRange -> {{-12, win + 2}, {-0.3, yL1 + laneH + 0.8}},
+    AspectRatio -> (yL1 + laneH + 1.1)/(win + 14),
     Background -> GrayLevel[0.97],
-    ImageSize -> 700,
-    PlotLabel -> Row[{"2-lane NaSch  t = ", t, "  (lane changes so far = ",
-                      Total[Take[res["laneChanges"], t]], ")"}]
+    ImageSize -> 800,
+    PlotLabel -> Row[{"2-lane NaSch  t = ", t,
+                      "  (cumulative lane changes = ",
+                      Total[Take[res["laneChanges"], t]],
+                      ")   first ", win, " of ", L, " cells shown"}]
   ]
 ];
 
-Options[AnimateNaSch2] = {"frameRate" -> 12, "stride" -> 2, "maxSteps" -> 120};
+Options[AnimateNaSch2] = {"frameRate" -> 4, "stride" -> 2, "maxSteps" -> 120,
+  "viewWindow" -> 200};
 
 AnimateNaSch2[res_Association, path_String, OptionsPattern[]] := Module[
-  {stride, fr, maxSteps, idx, images},
+  {stride, fr, maxSteps, idx, images, viewWindow},
   stride = OptionValue["stride"];
   fr = OptionValue["frameRate"];
   maxSteps = Min[OptionValue["maxSteps"], res["T"]];
+  viewWindow = OptionValue["viewWindow"];
   idx = Range[1, maxSteps, stride];
-  images = nasch2Frame[res, #] & /@ idx;
+  images = nasch2Frame[res, #, "viewWindow" -> viewWindow] & /@ idx;
   Export[path, images,
     "DisplayDurations" -> ConstantArray[1.0/fr, Length[images]]];
   path

@@ -28,7 +28,7 @@ loadImg[name_] := With[
           With[{frames = allFrames[[1 ;; -1 ;; stride]]},
             ListAnimate[
               ImageResize[#, {animWidth}] & /@ frames,
-              AnimationRate -> 10,
+              AnimationRate -> 4,
               AnimationRunning -> True,
               AnimationRepetitions -> Infinity
             ]
