@@ -19,11 +19,18 @@ imgWidth = 520;
 maxFrames = 30;
 animWidth = 420;
 
-(* Animation-specific overrides keyed by filename. Bando wants more frames
-   because the 2000-second simulation takes a while to show the full
-   rotation of the stop-and-go wave around the ring. *)
+(* Animation-specific overrides keyed by filename. *)
 $animFramesOverride = <|
-  "anim_bando.gif" -> 80
+  "anim_bando.gif" -> 80,
+  "anim_nasch.gif" -> 40
+|>;
+
+(* Playback rate overrides (fps). Default is 4. Slower rates give the
+   viewer more time to track what is happening in fast-evolving
+   animations. *)
+$animRateOverride = <|
+  "anim_nasch.gif" -> 2,
+  "anim_nasch_2lane.gif" -> 3
 |>;
 
 loadImg[name_] := With[
@@ -32,12 +39,13 @@ loadImg[name_] := With[
     Style["[missing image: " <> name <> "]", Red],
     If[StringEndsQ[ToLowerCase[name], ".gif"],
       With[{allFrames = Import[p, {"GIF", "ImageList"}],
-            cap = Lookup[$animFramesOverride, name, maxFrames]},
+            cap = Lookup[$animFramesOverride, name, maxFrames],
+            rate = Lookup[$animRateOverride, name, 4]},
         With[{stride = Max[1, Ceiling[Length[allFrames]/cap]]},
           With[{frames = allFrames[[1 ;; -1 ;; stride]]},
             ListAnimate[
               ImageResize[#, {animWidth}] & /@ frames,
-              AnimationRate -> 4,
+              AnimationRate -> rate,
               AnimationRunning -> True,
               AnimationRepetitions -> Infinity
             ]
