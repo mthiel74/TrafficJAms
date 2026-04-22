@@ -24,14 +24,16 @@ speedCol[v_, vmax_] := Blend[
 
 (* --------- IDM ring --------- *)
 
-idmRingFrame[res_Association, k_Integer, vmax_] := Module[
+(* Ring panel: cars as coloured disks on a circle, with a live speed
+   readout. Disk radius auto-scales so cars don't overlap. *)
+ringPanel[res_Association, k_Integer, vmax_, labelText_] := Module[
   {L = res["roadLength"], n = res["nVehicles"], pos, vel, t, angles, disks,
    diskR},
   pos = res["positions"][[k]];
   vel = res["velocities"][[k]];
   t = res["times"][[k]];
   angles = 2 Pi pos/L;
-  diskR = Clip[0.9 Pi/n, {0.03, 0.1}];  (* scale radius so cars don't overlap *)
+  diskR = Clip[0.9 Pi/n, {0.04, 0.11}];
   disks = MapThread[
     {speedCol[#2, vmax], EdgeForm[Directive[Thin, GrayLevel[0.3]]],
       Disk[{Cos[#1], Sin[#1]}, diskR]} &,
@@ -41,20 +43,69 @@ idmRingFrame[res_Association, k_Integer, vmax_] := Module[
     {
       {GrayLevel[0.82], Thickness[0.03], Circle[{0, 0}, 1]},
       disks,
-      Text[Style[Row[{"t = ", NumberForm[N[t], {4, 1}], " s"}], 12],
-        {0, 0.05}],
+      Text[Style[Row[{"t = ", NumberForm[N[t], {4, 1}], " s"}], 13],
+        {0, 0.08}],
       Text[Style[Row[{"\[LeftAngleBracket]v\[RightAngleBracket] = ",
-        NumberForm[N[Mean[vel]], {4, 2}], " m/s   spread [",
+        NumberForm[N[Mean[vel]], {4, 2}], " m/s    spread [",
         NumberForm[N[Min[vel]], {4, 1}], ", ",
-        NumberForm[N[Max[vel]], {4, 1}], "]"}], 10, Darker[Gray]],
-        {0, -0.12}]
+        NumberForm[N[Max[vel]], {4, 1}], "] m/s"}],
+        10, Darker[Gray]],
+        {0, -0.08}]
     },
     PlotRange -> 1.3 {{-1, 1}, {-1, 1}},
     AspectRatio -> 1,
     Background -> GrayLevel[0.97],
-    ImageSize -> 480,
-    PlotLabel -> Row[{"IDM ring road, ", n, " vehicles"}]
+    ImageSize -> 320,
+    PlotLabel -> labelText
   ]
+];
+
+(* Space-time panel: every recorded snapshot up to index k becomes a row
+   of coloured dots, one per vehicle, with dot colour = speed. Time is
+   on the horizontal axis, position (along the ring) on the vertical
+   axis. Jam waves appear as diagonal bands. *)
+spacetimePanel[res_Association, k_Integer, vmax_, totalFrames_, labelText_] := Module[
+  {L = res["roadLength"], n = res["nVehicles"], pos, vel, t, times,
+   tMax, pts, positions, velocities},
+  times = res["times"];
+  tMax = Last[times];
+  positions = res["positions"][[1 ;; k]];
+  velocities = res["velocities"][[1 ;; k]];
+  (* Build {time, carIndex position, velocity} tuples *)
+  pts = Flatten[
+    MapThread[
+      Function[{ti, p, v},
+        MapThread[{ti, #1, #2} &, {p, v}]
+      ],
+      {times[[1 ;; k]], positions, velocities}
+    ], 1];
+  Graphics[
+    {
+      {GrayLevel[0.95], Rectangle[{0, 0}, {tMax, L}]},
+      {PointSize[0.004],
+        (MapThread[{speedCol[#2, vmax], Point[{#1[[1]], #1[[2]]}]} &,
+           {pts[[All, {1, 2}]], pts[[All, 3]]}])}
+    },
+    PlotRange -> {{0, tMax}, {0, L}},
+    AspectRatio -> 0.55,
+    Frame -> True,
+    FrameLabel -> {"time t (s)", "position x (m)"},
+    FrameStyle -> Directive[GrayLevel[0.3], 10],
+    ImageSize -> 500,
+    Background -> White,
+    PlotLabel -> labelText
+  ]
+];
+
+idmRingFrame[res_Association, k_Integer, vmax_] := Module[
+  {ringLab, stLab, totalFrames},
+  totalFrames = Length[res["times"]];
+  ringLab = Row[{"IDM ring,  ", res["nVehicles"], " vehicles"}];
+  stLab = "Space-time diagram (jam waves = diagonal bands)";
+  Column[{
+    ringPanel[res, k, vmax, ringLab],
+    spacetimePanel[res, k, vmax, totalFrames, stLab]
+  }, Alignment -> Center, Spacings -> 0.5]
 ];
 
 Options[AnimateIDMRing] = {"vmax" -> 15, "frameStep" -> 1,
@@ -77,37 +128,15 @@ AnimateIDMRing[res_Association, path_String, OptionsPattern[]] := Module[
 (* --------- Bando ring --------- *)
 
 bandoRingFrame[res_Association, k_Integer, vmax_] := Module[
-  {L = res["roadLength"], n = res["nVehicles"], pos, vel, t, angles, disks,
-   meanSpd, diskR},
-  pos = res["positions"][[k]];
-  vel = res["velocities"][[k]];
-  t = res["times"][[k]];
-  meanSpd = Mean[vel];
-  angles = 2 Pi pos/L;
-  diskR = Clip[0.9 Pi/n, {0.04, 0.11}];
-  disks = MapThread[
-    {speedCol[#2, vmax], EdgeForm[Directive[Thin, GrayLevel[0.3]]],
-      Disk[{Cos[#1], Sin[#1]}, diskR]} &,
-    {angles, vel}
-  ];
-  Graphics[
-    {
-      {GrayLevel[0.82], Thickness[0.03], Circle[{0, 0}, 1]},
-      disks,
-      Text[Style[Row[{"\[LeftAngleBracket]v\[RightAngleBracket] = ",
-        NumberForm[N[meanSpd], {4, 2}], " m/s   spread [",
-        NumberForm[N[Min[vel]], {4, 1}], ", ",
-        NumberForm[N[Max[vel]], {4, 1}], "]"}], 11], {0, 0.06}],
-      Text[Style[Row[{"t = ", NumberForm[N[t], {4, 1}], " s"}], 10,
-        Gray], {0, -0.06}]
-    },
-    PlotRange -> 1.3 {{-1, 1}, {-1, 1}},
-    AspectRatio -> 1,
-    Background -> GrayLevel[0.97],
-    ImageSize -> 480,
-    PlotLabel -> Row[{"Bando OVM ring, \[Kappa] = ", res["kappa"],
-                       ", ", n, " vehicles"}]
-  ]
+  {ringLab, stLab, totalFrames},
+  totalFrames = Length[res["times"]];
+  ringLab = Row[{"Bando OVM ring, \[Kappa] = ", res["kappa"],
+                 ",  ", res["nVehicles"], " vehicles"}];
+  stLab = "Space-time trajectories (stop-and-go wave)";
+  Column[{
+    ringPanel[res, k, vmax, ringLab],
+    spacetimePanel[res, k, vmax, totalFrames, stLab]
+  }, Alignment -> Center, Spacings -> 0.5]
 ];
 
 Options[AnimateBandoRing] = {"vmax" -> 15, "frameStep" -> 1,

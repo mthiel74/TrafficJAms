@@ -495,31 +495,46 @@ accelerator as they approach their desired speed."}], "Text"],
 parameters \[LongDash] ",
    mathI[RowBox[{v0Sym, "=30"}]], " m/s, ",
    mathI[RowBox[{"T", "=1.6"}]], " s, ",
-   mathI[RowBox[{"a", "=0.73"}]], " m/s\[Superscript]2, ",
-   mathI[RowBox[{"b", "=1.67"}]], " m/s\[Superscript]2 \[LongDash] \
+   mathI[RowBox[{"a", "=0.73"}]], " m/",
+   mathI[SuperscriptBox["s", "2"]], ", ",
+   mathI[RowBox[{"b", "=1.67"}]], " m/",
+   mathI[SuperscriptBox["s", "2"]], " \[LongDash] \
 on a 30-vehicle 1\[ThinSpace]km ring with a single-vehicle speed \
 perturbation reproduces one of the most pedagogically useful \
 results in all of traffic science: the ",
    StyleBox["phantom jam", FontSlant -> Italic],
    ". The perturbation is not absorbed; instead it amplifies \
 through the platoon into a persistent backward-propagating jam \
-that has no visible external cause. A road a fraction away from \
-instability collapses into a stop-and-go wave; by ",
-   mathI[RowBox[{"t", "=500"}]], " s individual speeds span \
-6\[Dash]21 m/s, and the ring visibly has a dense orange cluster \
-(the jam) and a sparse green arc (free flow downstream)."}],
+that has no visible external cause. The animation shows this both \
+on the ring (dense orange jam cluster, sparse green free-flow arc) \
+and in the accumulating space-time diagram below it, where the \
+backward-travelling jam wave is the obvious diagonal band of \
+orange/red."}],
+      "Text"],
+
+ Cell[TextData[{
+   "This is exactly the same phenomenon that Sugiyama et al. \
+(2008) demonstrated experimentally on a real circular track \
+\[LongDash] their striking video is worth watching alongside the \
+simulation: ",
+   ButtonBox["youtube.com/watch?v=Rryu85BtALM",
+     BaseStyle -> "Hyperlink",
+     ButtonData -> {URL["https://www.youtube.com/watch?v=Rryu85BtALM"],
+                    None}],
+   "."}],
       "Text"],
 
  imgCell["anim_idm.gif",
    "Figure 4. 30 IDM vehicles on a 1 km ring with Treiber's \
 phantom-jam parameters (v0=30 m/s, T=1.6 s, a=0.73 m/s^2, \
-b=1.67 m/s^2). One vehicle is seeded at half speed at t=0; within \
-seconds the instability amplifies through the platoon into a \
-persistent stop-and-go wave that rotates backward around the ring. \
-By t=500 s the ring shows a clear dense orange cluster (the jam) \
-and a sparse green arc (free flow downstream); individual speeds \
-span 6 to 21 m/s and the gaps between cars vary by a factor of \
-3x between the two regions. (MP4: Wolfram/results/anim_idm.mp4.)"],
+b=1.67 m/s^2). Top panel: ring snapshot; cars are coloured by \
+speed and the dense orange cluster on one side of the ring is \
+the phantom jam. Bottom panel: accumulating space-time trajectory \
+diagram (time along x, position along y with wrap-around at \
+1000 m). The backward-travelling jam wave is the diagonal \
+orange/red band \[Dash] the cars move forward (slope up-right) \
+but the jam drifts backward relative to them. (MP4: \
+Wolfram/results/anim_idm.mp4.)"],
 
  (* ---- Section 5: Bando OVM ---- *)
 
@@ -548,14 +563,13 @@ cleanest mathematical explanation for why phantom jams exist: they \
 are the attractor of a dynamical bifurcation."}], "Text"],
 
  imgCell["anim_bando.gif",
-   "Figure 5. Animated Bando OVM on an 800 m ring with 18 \
-vehicles and kappa=0.4, chosen below the stability threshold \
-2 V_opt'(s*) ~ 0.61. Uniform flow at ~5.7 m/s is therefore \
-linearly unstable; the small position perturbation on vehicle 1 \
-grows via a Hopf bifurcation into a persistent stop-and-go wave \
-that rotates many times around the ring over the 2000 s shown. \
-By the end individual speeds span 1.3 to 13.1 m/s (green fast, \
-orange slow), a ~10x spread around the ~5.7 m/s mean. (MP4: \
+   "Figure 5. Bando OVM on an 800 m ring with 18 vehicles and \
+kappa=0.4, below the stability threshold 2 V_opt'(s*) ~ 0.61. \
+Top: ring snapshot showing the orange-red stop-and-go cluster and \
+green free-flow regions. Bottom: accumulating space-time trajectory \
+diagram \[Dash] the diagonal orange bands drifting backward \
+relative to the car trajectories are the stop-and-go waves. Speed \
+spread grows over time as the Hopf instability saturates. (MP4: \
 Wolfram/results/anim_bando.mp4.)"],
 
  (* ---- Section 6: NaSch ---- *)
