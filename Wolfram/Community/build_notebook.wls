@@ -52,6 +52,10 @@ $animRateOverride = <|
   "anim_nasch_2lane.gif" -> 3
 |>;
 
+(* Returns an AnimatedImage constructed from the subsampled GIF
+   frames. AnimatedImage (unlike ListAnimate/Manipulate) survives the
+   Wolfram-Community server-side HTML pre-render: the Community viewer
+   preserves the GIF payload as an <img> that loops in the browser. *)
 loadAnim[name_] := With[
   {p = FileNameJoin[{resDir, name}]},
   If[!FileExistsQ[p],
@@ -60,9 +64,9 @@ loadAnim[name_] := With[
           cap = Lookup[$animFramesOverride, name, 30],
           rate = Lookup[$animRateOverride, name, 4]},
       With[{stride = Max[1, Ceiling[Length[all]/cap]]},
-        ListAnimate[
+        AnimatedImage[
           ImageResize[#, {420}] & /@ all[[1 ;; -1 ;; stride]],
-          AnimationRate -> rate,
+          FrameRate -> rate,
           AnimationRunning -> True,
           AnimationRepetitions -> Infinity]]]]];
 
@@ -219,11 +223,13 @@ classical traffic-flow models."}], "Subtitle"],
 
  Cell["Getting started", "Section"],
 
- Cell[TextData[{"Every figure below is already rendered, so you can \
-read the notebook end-to-end without evaluating anything. If you do \
-want to rerun or tweak the simulations, the Input cell above each \
-figure contains the exact call. All the packages the code needs \
-ship with this post as ",
+ Cell[TextData[{"Every figure and animation below is already \
+rendered, so you can read the notebook end-to-end in the browser \
+without evaluating anything \[LongDash] the animated GIFs embedded \
+in each Output cell play directly in the Community viewer. If you \
+do want to rerun or tweak the simulations locally, the Input cell \
+above each figure contains the exact call. All the packages the \
+code needs ship with this post as ",
    StyleBox["trafficjams-packages.zip", "Input"],
    " \[LongDash] download it, unzip it into the ",
    StyleBox["same directory as this notebook", FontSlant -> Italic],
