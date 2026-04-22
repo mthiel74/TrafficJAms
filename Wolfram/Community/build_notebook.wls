@@ -14,17 +14,26 @@ imgWidth = 520;
    ListAnimate so the notebook plays the animation with play / pause /
    scrubber controls. Frames are subsampled and resized to keep the .nb
    file under the 25 MB Community-post soft limit; the original
-   full-resolution MP4 and GIF remain in Wolfram/results/. *)
+   full-resolution MP4 and GIF remain in Wolfram/results/. Individual
+   animations can override the frame cap via $animFramesOverride. *)
 maxFrames = 30;
 animWidth = 420;
+
+(* Animation-specific overrides keyed by filename. Bando wants more frames
+   because the 2000-second simulation takes a while to show the full
+   rotation of the stop-and-go wave around the ring. *)
+$animFramesOverride = <|
+  "anim_bando.gif" -> 80
+|>;
 
 loadImg[name_] := With[
   {p = FileNameJoin[{imgDir, name}]},
   If[!FileExistsQ[p],
     Style["[missing image: " <> name <> "]", Red],
     If[StringEndsQ[ToLowerCase[name], ".gif"],
-      With[{allFrames = Import[p, {"GIF", "ImageList"}]},
-        With[{stride = Max[1, Ceiling[Length[allFrames]/maxFrames]]},
+      With[{allFrames = Import[p, {"GIF", "ImageList"}],
+            cap = Lookup[$animFramesOverride, name, maxFrames]},
+        With[{stride = Max[1, Ceiling[Length[allFrames]/cap]]},
           With[{frames = allFrames[[1 ;; -1 ;; stride]]},
             ListAnimate[
               ImageResize[#, {animWidth}] & /@ frames,
@@ -542,8 +551,9 @@ vehicles and kappa=0.4, chosen below the stability threshold \
 2 V_opt'(s*) ~ 0.61. Uniform flow at ~5.7 m/s is therefore \
 linearly unstable; the small position perturbation on vehicle 1 \
 grows via a Hopf bifurcation into a persistent stop-and-go wave \
-that rotates around the ring. By t=400 s individual speeds span \
-2.9 to 9.5 m/s (green fast, orange slow), a 3x spread. (MP4: \
+that rotates many times around the ring over the 2000 s shown. \
+By the end individual speeds span 1.3 to 13.1 m/s (green fast, \
+orange slow), a ~10x spread around the ~5.7 m/s mean. (MP4: \
 Wolfram/results/anim_bando.mp4.)"],
 
  (* ---- Section 6: NaSch ---- *)
